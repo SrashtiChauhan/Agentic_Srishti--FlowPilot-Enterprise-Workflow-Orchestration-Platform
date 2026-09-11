@@ -1,0 +1,52 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Python testing and tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Build and coverage files
+dist/
+build/
+coverage/
+
+# Database and local runtime files
+*.sqlite3
+*.db
+
+# Secrets and private keys
+*.pem
+*.key
+secrets/
