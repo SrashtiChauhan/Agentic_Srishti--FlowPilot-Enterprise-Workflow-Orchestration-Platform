@@ -105,7 +105,7 @@ React Context is useful for simple global state but can become inconvenient for 
 * Provides automatic API documentation.
 * Uses Pydantic for validation.
 * Integrates naturally with AI and data-processing libraries.
-* Works well with LangGraph and Gemini SDKs.
+* Works well with LangGraph and multiple AI provider SDKs.
 
 **Alternatives considered:**
 
@@ -147,7 +147,7 @@ FlowPilot Workflow Engine
    LangGraph Runtime
         |
         v
- Gemini + Tools + Agent State
+ AI Provider + Tools + Agent State
 ```
 
 FlowPilot controls the business workflow. LangGraph controls reasoning inside an Agent node.
@@ -164,27 +164,61 @@ LangChain is useful as a library layer but does not provide the same graph-orien
 
 ---
 
-### 6. LLM Provider — Google Gemini
+### 6. LLM Provider — Provider-Agnostic Free/Open Model Strategy
 
-**Selected technology:** Google Gemini API
+**Selected technology:** Provider adapter with Mistral API, Hugging Face Inference API, and Ollama fallback.
 
 **Why:**
 
-* Provides modern generative AI models.
-* Supports structured generation and tool calling.
-* Fits the planned AI Agent implementation.
-* Can be integrated through Python SDKs.
+* Avoids mandatory dependency on paid LLM APIs.
+* Supports development within free-tier and open-source constraints.
+* Allows the project to use Mistral or other open models available through Hugging Face.
+* Ollama provides a local fallback when API quotas are unavailable or exceeded.
+* Keeps the application flexible if model availability or pricing changes.
+
+**Implementation approach:**
+
+The backend will communicate with an abstract AI provider interface instead of directly calling a specific LLM provider.
+
+```text
+FastAPI
+   |
+   v
+AI Provider Interface
+   |
+   +--> MistralProvider
+   |
+   +--> HuggingFaceProvider
+   |
+   +--> OllamaProvider
+```
+
+The provider interface will expose common operations such as:
+
+* Text generation.
+* Structured JSON generation.
+* Tool-calling support where available.
+
+All AI-generated workflow definitions must be validated using Pydantic schemas before they are accepted by the workflow engine.
+
+**Original architecture note:**
+
+The initial architecture documentation specified Google Gemini API. For the MVP implementation, Gemini will not be a required dependency because its free tier has usage limits and paid usage may be required at scale. Gemini may be added later as another provider without changing the workflow engine.
 
 **Alternatives considered:**
 
-* OpenAI API
-* Anthropic API
-* Local open-source models
+* Google Gemini API.
+* OpenAI API.
+* Anthropic API.
+* Local open-source models only.
 
-**Reason for not selecting them initially:**
+**Reason for not selecting Gemini initially:**
 
-Other providers are valid future integrations. Gemini is selected for the initial implementation because it matches the project's planned resources and agent integration direction.
+Gemini is technically suitable, but making it the primary dependency could introduce cost and quota constraints. A provider-agnostic design provides greater flexibility for a free MVP.
 
+**Reason for not selecting local-only models:**
+
+Running models locally can require significant RAM, storage, and processing power. API-based free/open providers are easier for initial development, while Ollama remains available as a fallback.
 ---
 
 ### 7. Database — PostgreSQL
@@ -358,7 +392,9 @@ Testing will be introduced alongside features instead of being postponed until t
 * React Flow accelerates visual editor development.
 * FastAPI and LangGraph align naturally with Python-based AI development.
 * Redis and ARQ support asynchronous workflow execution.
-* The stack can be deployed incrementally.
+* The stack can be deployed incrementally.- The application must handle provider-specific differences in structured output and tool calling.
+- Free API quotas may require rate limiting and a local fallback.
+
 
 ### Trade-offs
 
