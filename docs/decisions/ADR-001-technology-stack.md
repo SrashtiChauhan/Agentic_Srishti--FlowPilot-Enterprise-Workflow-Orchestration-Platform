@@ -18,7 +18,7 @@ The goal is to select technologies that:
 * Have mature ecosystems.
 * Support asynchronous execution.
 * Provide reliable AI and database integrations.
-* Can be deployed within the planned two-month MVP timeline
+* Can be deployed within the planned two-month MVP timeline.
 
 ## Decisions
 
