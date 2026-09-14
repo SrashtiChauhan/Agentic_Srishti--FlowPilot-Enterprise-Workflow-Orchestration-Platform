@@ -14,9 +14,11 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import WorkflowNode from "./WorkflowNode";
+
 const nodeTypes = {
   workflowNode: WorkflowNode,
 };
+
 interface WorkflowCanvasProps {
   nodes: Node[];
   edges: Edge[];

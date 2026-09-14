@@ -28,20 +28,22 @@ export default function NewWorkflowPage() {
   );
 
   const addWorkflowNode = (type: string, label: string) => {
-    const newNode: Node = {
-      id: `${type}-${Date.now()}`,
-      type: "default",
-      position: {
-        x: 100 + nodes.length * 40,
-        y: 100 + nodes.length * 40,
-      },
-      data: {
-        label,
-      },
-    };
-
-    setNodes((currentNodes) => [...currentNodes, newNode]);
+  const newNode: Node = {
+    id: `${type}-${Date.now()}`,
+    type: "workflowNode",
+    position: {
+      x: 100 + nodes.length * 40,
+      y: 100 + nodes.length * 40,
+    },
+    data: {
+      label,
+      description: `Configure your ${label.toLowerCase()} node`,
+      nodeType: type,
+    },
   };
+
+  setNodes((currentNodes) => [...currentNodes, newNode]);
+};
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
