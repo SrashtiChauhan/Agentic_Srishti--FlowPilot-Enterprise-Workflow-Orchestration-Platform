@@ -13,7 +13,10 @@ import {
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
-
+import WorkflowNode from "./WorkflowNode";
+const nodeTypes = {
+  workflowNode: WorkflowNode,
+};
 interface WorkflowCanvasProps {
   nodes: Node[];
   edges: Edge[];
@@ -37,6 +40,7 @@ export default function WorkflowCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        nodeTypes={nodeTypes}
         fitView
       >
         <Background gap={20} size={1} />
