@@ -1,4 +1,4 @@
-# ADR-001: FlowPilot Technology Stack
+# ADR-001: FlowPilot Technology Stac
 
 * **Status:** Accepted
 * **Date:** 2026-09-12
