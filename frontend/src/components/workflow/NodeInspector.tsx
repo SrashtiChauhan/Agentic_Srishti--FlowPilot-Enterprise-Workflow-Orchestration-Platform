@@ -75,13 +75,24 @@ export default function NodeInspector({
         </div>
 
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          <label
+            htmlFor="node-subtitle"
+            className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+          >
             Subtitle
-          </p>
+          </label>
 
-          <p className="mt-1 text-sm text-slate-400">
-            {String(node.data.subtitle ?? "No subtitle")}
-          </p>
+          <input
+            id="node-subtitle"
+            type="text"
+            value={String(node.data.subtitle ?? "")}
+            onChange={(event) => {
+              onUpdateNode(node.id, {
+                subtitle: event.target.value,
+              });
+            }}
+            className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-400/60"
+          />
         </div>
 
         <div>
