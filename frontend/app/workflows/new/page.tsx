@@ -26,6 +26,36 @@ export default function NewWorkflowPage() {
     setSelectedNode(node);
     console.log("Selected node:", node);
   }, []);
+  const updateNode = useCallback(
+    (nodeId: string, updates: Record<string, unknown>) => {
+      setNodes((currentNodes) =>
+        currentNodes.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  ...updates,
+                },
+              }
+            : node,
+        ),
+      );
+
+      setSelectedNode((currentNode) =>
+        currentNode && currentNode.id === nodeId
+          ? {
+              ...currentNode,
+              data: {
+                ...currentNode.data,
+                ...updates,
+              },
+            }
+          : currentNode,
+      );
+    },
+    [setNodes],
+  );
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -155,7 +185,7 @@ export default function NewWorkflowPage() {
             </p>
           </div>
         </section>
-       <NodeInspector node={selectedNode} />
+        <NodeInspector node={selectedNode} onUpdateNode={updateNode} />
       </div>
     </main>
   );
