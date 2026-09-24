@@ -10,6 +10,7 @@ import {
   type OnConnect,
   type OnEdgesChange,
   type OnNodesChange,
+  type NodeMouseHandler,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
@@ -25,6 +26,7 @@ interface WorkflowCanvasProps {
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
+  onNodeClick: NodeMouseHandler;
 }
 
 export default function WorkflowCanvas({
@@ -33,6 +35,7 @@ export default function WorkflowCanvas({
   onNodesChange,
   onEdgesChange,
   onConnect,
+  onNodeClick,
 }: WorkflowCanvasProps) {
   return (
     <div className="h-full w-full overflow-hidden rounded-xl border border-slate-700">
@@ -42,6 +45,7 @@ export default function WorkflowCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
       >

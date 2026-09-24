@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
   addEdge,
   useEdgesState,
@@ -9,6 +9,7 @@ import {
   type Connection,
   type Edge,
   type Node,
+  type NodeMouseHandler,
 } from "@xyflow/react";
 
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas";
@@ -19,15 +20,20 @@ const initialEdges: Edge[] = [];
 export default function NewWorkflowPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
+    setSelectedNode(node);
+    console.log("Selected node:", node);
+  }, []);
 
   const onConnect = useCallback(
     (connection: Connection) => {
       setEdges((currentEdges) => addEdge(connection, currentEdges));
     },
-    [setEdges]
+    [setEdges],
   );
 
-  const addWorkflowNode = (type: string, label: string) => {
+  const addWorkflowNode = (type: string, title: string) => {
     const newNode: Node = {
       id: `${type}-${Date.now()}`,
       type: "workflowNode",
@@ -36,9 +42,11 @@ export default function NewWorkflowPage() {
         y: 120 + Math.floor(nodes.length / 3) * 220,
       },
       data: {
-        label,
-        description: `Configure your ${label.toLowerCase()} node`,
-        nodeType: type,
+        title,
+        subtitle: `Configure your ${title.toLowerCase()} node`,
+        type,
+        status: "idle",
+        config: {},
       },
     };
 
@@ -132,6 +140,7 @@ export default function NewWorkflowPage() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onNodeClick={onNodeClick}
           />
 
           {/* Canvas information */}
@@ -145,6 +154,82 @@ export default function NewWorkflowPage() {
             </p>
           </div>
         </section>
+        {/* Node Inspector */}
+<aside className="w-80 shrink-0 border-l border-slate-800 bg-slate-900/80 p-5 backdrop-blur-md">
+  <div>
+    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+      Node Inspector
+    </p>
+
+    <p className="mt-2 text-xs text-slate-500">
+      Select a node to inspect its configuration.
+    </p>
+  </div>
+
+  {!selectedNode ? (
+    <div className="mt-8 rounded-xl border border-dashed border-slate-700 p-5 text-center">
+      <p className="text-sm text-slate-400">
+        No node selected
+      </p>
+
+      <p className="mt-2 text-xs text-slate-600">
+        Click a workflow node to view its details.
+      </p>
+    </div>
+  ) : (
+    <div className="mt-6 space-y-5">
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Type
+        </p>
+
+        <p className="mt-1 text-sm font-semibold uppercase text-cyan-400">
+          {String(selectedNode.data.type)}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Title
+        </p>
+
+        <p className="mt-1 text-sm font-semibold text-slate-100">
+          {String(selectedNode.data.title)}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Subtitle
+        </p>
+
+        <p className="mt-1 text-sm text-slate-400">
+          {String(selectedNode.data.subtitle ?? "No subtitle")}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Status
+        </p>
+
+        <p className="mt-1 font-mono text-xs uppercase text-slate-400">
+          {String(selectedNode.data.status)}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Node ID
+        </p>
+
+        <p className="mt-1 break-all font-mono text-[11px] text-slate-500">
+          {selectedNode.id}
+        </p>
+      </div>
+    </div>
+  )}
+</aside>
       </div>
     </main>
   );

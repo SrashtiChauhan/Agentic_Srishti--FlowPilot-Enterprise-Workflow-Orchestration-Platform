@@ -9,12 +9,20 @@ import {
 } from "@xyflow/react";
 
 type WorkflowNodeData = {
-  label: string;
-  description?: string;
-  nodeType?: string;
+  title: string;
+  subtitle?: string;
+  type: string;
+  status:
+    | "idle"
+    | "running"
+    | "completed"
+    | "failed"
+    | "waiting_approval";
 };
 
 type WorkflowNodeType = Node<WorkflowNodeData>;
+
+
 
 const nodeStyles: Record<string, string> = {
   trigger: "border-amber-400/60 shadow-amber-500/10",
@@ -36,7 +44,7 @@ export default function WorkflowNode({
   data,
   selected,
 }: NodeProps<WorkflowNodeType>) {
-  const nodeType = data.nodeType ?? "action";
+  const nodeType = data.type ?? "action";
 
   return (
     <>
@@ -68,11 +76,11 @@ export default function WorkflowNode({
         </div>
 
         <h3 className="text-sm font-semibold text-slate-100">
-          {data.label}
+          {data.title}
         </h3>
 
         <p className="mt-1 text-xs text-slate-400">
-          {data.description ?? "Workflow node"}
+          {data.subtitle ?? "Workflow node"}
         </p>
 
         <div className="mt-3 border-t border-slate-800 pt-3">
