@@ -28,97 +28,121 @@ export default function NewWorkflowPage() {
   );
 
   const addWorkflowNode = (type: string, label: string) => {
-  const newNode: Node = {
-    id: `${type}-${Date.now()}`,
-    type: "workflowNode",
-    position: {
-      x: 100 + nodes.length * 40,
-      y: 100 + nodes.length * 40,
-    },
-    data: {
-      label,
-      description: `Configure your ${label.toLowerCase()} node`,
-      nodeType: type,
-    },
+    const newNode: Node = {
+      id: `${type}-${Date.now()}`,
+      type: "workflowNode",
+      position: {
+        x: 120 + (nodes.length % 3) * 300,
+        y: 120 + Math.floor(nodes.length / 3) * 220,
+      },
+      data: {
+        label,
+        description: `Configure your ${label.toLowerCase()} node`,
+        nodeType: type,
+      },
+    };
+
+    setNodes((currentNodes) => [...currentNodes, newNode]);
   };
 
-  setNodes((currentNodes) => [...currentNodes, newNode]);
-};
-
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-slate-800 px-6 py-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div>
-            <Link
-              href="/"
-              className="text-sm text-sky-400 hover:text-sky-300"
-            >
-              ← Back to Dashboard
-            </Link>
+    <main className="flex h-screen flex-col overflow-hidden bg-slate-950 text-white">
+      {/* Header */}
+      <header className="flex h-20 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-950 px-6">
+        <div>
+          <Link
+            href="/"
+            className="text-sm text-cyan-400 transition hover:text-cyan-300"
+          >
+            ← Back to Dashboard
+          </Link>
 
-            <h1 className="mt-3 text-2xl font-bold">
-              Create New Workflow
-            </h1>
-          </div>
-
-          <button className="rounded-lg bg-sky-500 px-5 py-3 font-medium text-slate-950 hover:bg-sky-400">
-            Save Workflow
-          </button>
+          <h1 className="mt-1 text-lg font-extrabold tracking-tight text-white">
+            Create New Workflow
+          </h1>
         </div>
+
+        <button className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400">
+          Save Workflow
+        </button>
       </header>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-[220px_1fr] gap-5 p-6">
-        <aside className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <h2 className="font-semibold">Node Palette</h2>
+      {/* Main Workflow Workspace */}
+      <div className="flex min-h-0 flex-1">
+        {/* Node Sidebar */}
+        <aside className="w-64 shrink-0 border-r border-slate-800 bg-slate-900/80 p-5 backdrop-blur-md">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Node Palette
+            </p>
 
-          <div className="mt-4 space-y-3">
+            <p className="mt-2 text-xs text-slate-500">
+              Add components to build your workflow.
+            </p>
+          </div>
+
+          <div className="mt-6 space-y-3">
             <button
               onClick={() => addWorkflowNode("trigger", "Trigger")}
-              className="w-full rounded-lg border border-slate-700 px-3 py-3 text-left hover:bg-slate-800"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left text-sm font-medium transition hover:border-amber-400/50 hover:bg-slate-800"
             >
-              Trigger
+              <span className="text-amber-400">●</span>
+              <span className="ml-3">Trigger</span>
             </button>
 
             <button
               onClick={() => addWorkflowNode("agent", "AI Agent")}
-              className="w-full rounded-lg border border-slate-700 px-3 py-3 text-left hover:bg-slate-800"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left text-sm font-medium transition hover:border-cyan-400/50 hover:bg-slate-800"
             >
-              AI Agent
+              <span className="text-cyan-400">●</span>
+              <span className="ml-3">AI Agent</span>
             </button>
 
             <button
               onClick={() => addWorkflowNode("condition", "Condition")}
-              className="w-full rounded-lg border border-slate-700 px-3 py-3 text-left hover:bg-slate-800"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left text-sm font-medium transition hover:border-purple-400/50 hover:bg-slate-800"
             >
-              Condition
+              <span className="text-purple-400">●</span>
+              <span className="ml-3">Condition</span>
+            </button>
+
+            <button
+              onClick={() => addWorkflowNode("hitl", "Approval Request")}
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left text-sm font-medium transition hover:border-rose-400/50 hover:bg-slate-800"
+            >
+              <span className="text-rose-400">●</span>
+              <span className="ml-3">HITL Approval</span>
             </button>
 
             <button
               onClick={() => addWorkflowNode("action", "Action")}
-              className="w-full rounded-lg border border-slate-700 px-3 py-3 text-left hover:bg-slate-800"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left text-sm font-medium transition hover:border-emerald-400/50 hover:bg-slate-800"
             >
-              Action
+              <span className="text-emerald-400">●</span>
+              <span className="ml-3">Action</span>
             </button>
           </div>
         </aside>
 
-        <section className="h-[650px] rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <div className="mb-4">
-            <h2 className="font-semibold">Workflow Canvas</h2>
-            <p className="text-sm text-slate-400">
-              Add nodes and connect them to design your workflow.
-            </p>
-          </div>
+        {/* Full Canvas */}
+        <section className="relative min-w-0 flex-1">
+          <WorkflowCanvas
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+          />
 
-          <div className="h-[570px]">
-            <WorkflowCanvas
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-            />
+          {/* Canvas information */}
+          <div className="pointer-events-none absolute left-5 top-4 z-10">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Workflow Canvas
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              {nodes.length} nodes · {edges.length} connections
+            </p>
           </div>
         </section>
       </div>
