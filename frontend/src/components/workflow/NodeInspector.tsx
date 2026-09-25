@@ -299,6 +299,41 @@ export default function NodeInspector({
     </p>
   </div>
 )}
+{node.data.type === "action" && (
+  <div>
+    <label
+      htmlFor="action-type"
+      className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    >
+      Action Type
+    </label>
+
+    <select
+      id="action-type"
+      value={config?.actionType ?? "api"}
+      onChange={(event) => {
+        onUpdateNode(node.id, {
+          config: {
+            ...(node.data.config as Record<string, unknown>),
+            actionType: event.target.value,
+          },
+        });
+      }}
+      className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-emerald-400/60"
+    >
+      <option value="slack">Slack</option>
+      <option value="jira">Jira</option>
+      <option value="email">Email</option>
+      <option value="database">Database</option>
+      <option value="github">GitHub</option>
+      <option value="api">API</option>
+    </select>
+
+    <p className="mt-1 text-[10px] text-slate-600">
+      Select the integration used by this action.
+    </p>
+  </div>
+)}
       </div>
     </aside>
   );
