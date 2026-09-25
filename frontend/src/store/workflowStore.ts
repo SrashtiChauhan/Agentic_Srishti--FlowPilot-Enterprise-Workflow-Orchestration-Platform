@@ -7,6 +7,7 @@ interface WorkflowState {
 
   setNodes: (nodes: WorkflowNode[]) => void;
   setEdges: (edges: WorkflowEdge[]) => void;
+  updateNode: (nodeId: string, updates: Partial<WorkflowNode>) => void;
 
   addNode: (node: WorkflowNode) => void;
   removeNode: (nodeId: string) => void;
@@ -19,6 +20,17 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
   setNodes: (nodes) => set({ nodes }),
 
   setEdges: (edges) => set({ edges }),
+  updateNode: (nodeId, updates) =>
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === nodeId
+          ? {
+              ...node,
+              ...updates,
+            }
+          : node,
+      ),
+    })),
 
   addNode: (node) =>
     set((state) => ({
@@ -29,7 +41,7 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
     set((state) => ({
       nodes: state.nodes.filter((node) => node.id !== nodeId),
       edges: state.edges.filter(
-        (edge) => edge.source !== nodeId && edge.target !== nodeId
+        (edge) => edge.source !== nodeId && edge.target !== nodeId,
       ),
     })),
 }));

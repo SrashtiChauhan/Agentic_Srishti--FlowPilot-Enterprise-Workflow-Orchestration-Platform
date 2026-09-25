@@ -14,11 +14,15 @@ import {
 
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas";
 import NodeInspector from "@/components/workflow/NodeInspector";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
 
 export default function NewWorkflowPage() {
+  const updateNodeInStore = useWorkflowStore(
+  (state) => state.updateNode,
+);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -54,6 +58,7 @@ export default function NewWorkflowPage() {
   }, []);
   const updateNode = useCallback(
     (nodeId: string, updates: Record<string, unknown>) => {
+      updateNodeInStore(nodeId, updates);
       setNodes((currentNodes) =>
         currentNodes.map((node) =>
           node.id === nodeId
@@ -80,7 +85,7 @@ export default function NewWorkflowPage() {
           : currentNode,
       );
     },
-    [setNodes],
+    [setNodes, updateNodeInStore],
   );
 
   const onConnect = useCallback(
