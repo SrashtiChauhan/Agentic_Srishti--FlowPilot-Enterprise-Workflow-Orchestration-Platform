@@ -15,47 +15,74 @@ import {
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas";
 import NodeInspector from "@/components/workflow/NodeInspector";
 import { useWorkflowStore } from "@/store/workflowStore";
+import type { WorkflowNodeType } from "@/types/workflow";
 
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
 
 export default function NewWorkflowPage() {
-  const updateNodeInStore = useWorkflowStore(
-  (state) => state.updateNode,
-);
+  const updateNodeInStore = useWorkflowStore((state) => state.updateNode);
+  const addNodeToStore = useWorkflowStore((state) => state.addNode);
+  const setEdgesInStore = useWorkflowStore((state) => state.setEdges);
+  const removeNodeFromStore = useWorkflowStore((state) => state.removeNode);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   useEffect(() => {
-  const savedWorkflow = localStorage.getItem("flowpilot-workflow-draft");
+    const savedWorkflow = localStorage.getItem("flowpilot-workflow-draft");
 
-  if (!savedWorkflow) {
-    return;
-  }
-
-  try {
-    const workflowGraph = JSON.parse(savedWorkflow);
-
-    if (
-      Array.isArray(workflowGraph.nodes) &&
-      Array.isArray(workflowGraph.edges)
-    ) {
-      setNodes(workflowGraph.nodes);
-      setEdges(workflowGraph.edges);
-
-      console.log("Workflow loaded locally:", workflowGraph);
-      
+    if (!savedWorkflow) {
+      return;
     }
-  } catch (error) {
-    console.error("Failed to load saved workflow:", error);
-  }
-}, [setNodes, setEdges]);
+
+    try {
+      const workflowGraph = JSON.parse(savedWorkflow);
+
+      if (
+        Array.isArray(workflowGraph.nodes) &&
+        Array.isArray(workflowGraph.edges)
+      ) {
+        setNodes(workflowGraph.nodes);
+        setEdges(workflowGraph.edges);
+
+        useWorkflowStore.getState().setNodes(workflowGraph.nodes);
+        useWorkflowStore.getState().setEdges(workflowGraph.edges);
+
+        console.log("Workflow loaded locally:", workflowGraph);
+      }
+    } catch (error) {
+      console.error("Failed to load saved workflow:", error);
+    }
+  }, [setNodes, setEdges]);
 
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     setSelectedNode(node);
     console.log("Selected node:", node);
   }, []);
+
+  const onNodesChangeWithStore = useCallback(
+    (changes: Parameters<typeof onNodesChange>[0]) => {
+      onNodesChange(changes);
+
+      changes.forEach((change) => {
+        if (change.type === "remove") {
+          removeNodeFromStore(change.id);
+        }
+
+        if (change.type === "position" && change.position) {
+          updateNodeInStore(change.id, {
+            position: {
+              x: change.position.x,
+              y: change.position.y,
+            },
+          });
+        }
+      });
+    },
+    [onNodesChange, removeNodeFromStore, updateNodeInStore],
+  );
+
   const updateNode = useCallback(
     (nodeId: string, updates: Record<string, unknown>) => {
       updateNodeInStore(nodeId, updates);
@@ -90,31 +117,68 @@ export default function NewWorkflowPage() {
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((currentEdges) => addEdge(connection, currentEdges));
+      setEdges((currentEdges) => {
+        const updatedEdges = addEdge(connection, currentEdges);
+
+        setEdgesInStore(
+          updatedEdges.map((edge) => ({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+          })),
+        );
+
+        return updatedEdges;
+      });
     },
-    [setEdges],
+    [setEdges, setEdgesInStore],
   );
+  const onEdgesChangeWithStore = useCallback(
+    (changes: Parameters<typeof onEdgesChange>[0]) => {
+      onEdgesChange(changes);
+
+      const removedEdgeIds = new Set(
+        changes
+          .filter((change) => change.type === "remove")
+          .map((change) => change.id),
+      );
+
+      if (removedEdgeIds.size > 0) {
+        setEdgesInStore(
+          edges
+            .filter((edge) => !removedEdgeIds.has(edge.id))
+            .map((edge) => ({
+              id: edge.id,
+              source: edge.source,
+              target: edge.target,
+            })),
+        );
+      }
+    },
+    [edges, onEdgesChange, setEdgesInStore],
+  );
+
   const saveWorkflow = () => {
-  const workflowGraph = {
-    nodes,
-    edges,
+    const workflowGraph = {
+      nodes,
+      edges,
+    };
+
+    localStorage.setItem(
+      "flowpilot-workflow-draft",
+      JSON.stringify(workflowGraph),
+    );
+
+    console.log("Workflow saved locally:", workflowGraph);
+
+    setIsSaved(true);
+
+    setTimeout(() => {
+      setIsSaved(false);
+    }, 2000);
   };
 
-  localStorage.setItem(
-    "flowpilot-workflow-draft",
-    JSON.stringify(workflowGraph),
-  );
-
-  console.log("Workflow saved locally:", workflowGraph);
-
-  setIsSaved(true);
-
-  setTimeout(() => {
-    setIsSaved(false);
-  }, 2000);
-};
-
-  const addWorkflowNode = (type: string, title: string) => {
+  const addWorkflowNode = (type: WorkflowNodeType, title: string) => {
     const newNode: Node = {
       id: `${type}-${Date.now()}`,
       type: "workflowNode",
@@ -130,6 +194,15 @@ export default function NewWorkflowPage() {
         config: {},
       },
     };
+    addNodeToStore({
+      id: newNode.id,
+      type,
+      title,
+      subtitle: `Configure your ${title.toLowerCase()} node`,
+      position: newNode.position,
+      status: "idle",
+      config: {},
+    });
 
     setNodes((currentNodes) => [...currentNodes, newNode]);
   };
@@ -221,8 +294,8 @@ export default function NewWorkflowPage() {
           <WorkflowCanvas
             nodes={nodes}
             edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
+            onNodesChange={onNodesChangeWithStore}
+            onEdgesChange={onEdgesChangeWithStore}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
           />
