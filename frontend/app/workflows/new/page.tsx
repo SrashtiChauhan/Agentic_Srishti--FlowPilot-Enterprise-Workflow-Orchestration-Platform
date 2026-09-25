@@ -10,6 +10,7 @@ import {
   type Edge,
   type Node,
   type NodeMouseHandler,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas";
@@ -29,6 +30,8 @@ export default function NewWorkflowPage() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [reactFlowInstance, setReactFlowInstance] =
+  useState<ReactFlowInstance | null>(null);
   useEffect(() => {
     const savedWorkflow = localStorage.getItem("flowpilot-workflow-draft");
 
@@ -179,33 +182,40 @@ export default function NewWorkflowPage() {
   };
 
   const addWorkflowNode = (type: WorkflowNodeType, title: string) => {
-    const newNode: Node = {
-      id: `${type}-${Date.now()}`,
-      type: "workflowNode",
-      position: {
-        x: 120 + (nodes.length % 3) * 300,
-        y: 120 + Math.floor(nodes.length / 3) * 220,
-      },
-      data: {
-        title,
-        subtitle: `Configure your ${title.toLowerCase()} node`,
-        type,
-        status: "idle",
-        config: {},
-      },
-    };
-    addNodeToStore({
-      id: newNode.id,
-      type,
+  if (!reactFlowInstance) {
+    return;
+  }
+
+  const position = reactFlowInstance.screenToFlowPosition({
+    x: window.innerWidth / 2 - 110,
+    y: window.innerHeight / 2 - 70,
+  });
+
+  const newNode: Node = {
+    id: `${type}-${Date.now()}`,
+    type: "workflowNode",
+    position,
+    data: {
       title,
       subtitle: `Configure your ${title.toLowerCase()} node`,
-      position: newNode.position,
+      type,
       status: "idle",
       config: {},
-    });
-
-    setNodes((currentNodes) => [...currentNodes, newNode]);
+    },
   };
+
+  addNodeToStore({
+    id: newNode.id,
+    type,
+    title,
+    subtitle: `Configure your ${title.toLowerCase()} node`,
+    position: newNode.position,
+    status: "idle",
+    config: {},
+  });
+
+  setNodes((currentNodes) => [...currentNodes, newNode]);
+};
 
   return (
     <main className="flex h-screen flex-col overflow-hidden bg-slate-950 text-white">
@@ -298,6 +308,7 @@ export default function NewWorkflowPage() {
             onEdgesChange={onEdgesChangeWithStore}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
+            onInit={setReactFlowInstance}
           />
 
           {/* Canvas information */}
