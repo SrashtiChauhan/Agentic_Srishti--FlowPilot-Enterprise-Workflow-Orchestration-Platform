@@ -152,6 +152,32 @@ export default function NodeInspector({
     />
   </div>
 )}
+{node.data.type === "agent" && (
+  <div>
+    <label
+      htmlFor="agent-prompt"
+      className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    >
+      Prompt
+    </label>
+
+    <textarea
+      id="agent-prompt"
+      value={config?.prompt ?? ""}
+      onChange={(event) => {
+        onUpdateNode(node.id, {
+          config: {
+            ...(node.data.config as Record<string, unknown>),
+            prompt: event.target.value,
+          },
+        });
+      }}
+      placeholder="Enter the agent prompt"
+      rows={5}
+      className="mt-2 w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-400/60"
+    />
+  </div>
+)}
       </div>
     </aside>
   );
