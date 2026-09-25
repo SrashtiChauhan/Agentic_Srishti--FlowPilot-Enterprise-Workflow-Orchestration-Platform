@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   addEdge,
   useEdgesState,
@@ -22,6 +22,32 @@ export default function NewWorkflowPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  useEffect(() => {
+  const savedWorkflow = localStorage.getItem("flowpilot-workflow-draft");
+
+  if (!savedWorkflow) {
+    return;
+  }
+
+  try {
+    const workflowGraph = JSON.parse(savedWorkflow);
+
+    if (
+      Array.isArray(workflowGraph.nodes) &&
+      Array.isArray(workflowGraph.edges)
+    ) {
+      setNodes(workflowGraph.nodes);
+      setEdges(workflowGraph.edges);
+
+      console.log("Workflow loaded locally:", workflowGraph);
+      
+    }
+  } catch (error) {
+    console.error("Failed to load saved workflow:", error);
+  }
+}, [setNodes, setEdges]);
+
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     setSelectedNode(node);
     console.log("Selected node:", node);
@@ -63,6 +89,25 @@ export default function NewWorkflowPage() {
     },
     [setEdges],
   );
+  const saveWorkflow = () => {
+  const workflowGraph = {
+    nodes,
+    edges,
+  };
+
+  localStorage.setItem(
+    "flowpilot-workflow-draft",
+    JSON.stringify(workflowGraph),
+  );
+
+  console.log("Workflow saved locally:", workflowGraph);
+
+  setIsSaved(true);
+
+  setTimeout(() => {
+    setIsSaved(false);
+  }, 2000);
+};
 
   const addWorkflowNode = (type: string, title: string) => {
     const newNode: Node = {
@@ -101,8 +146,11 @@ export default function NewWorkflowPage() {
           </h1>
         </div>
 
-        <button className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400">
-          Save Workflow
+        <button
+          onClick={saveWorkflow}
+          className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
+        >
+          {isSaved ? "Saved ✓" : "Save Workflow"}
         </button>
       </header>
 
