@@ -239,6 +239,66 @@ export default function NodeInspector({
     </select>
   </div>
 )}
+{node.data.type === "condition" && (
+  <div>
+    <label
+      htmlFor="condition-logic"
+      className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    >
+      Condition Logic
+    </label>
+
+    <textarea
+      id="condition-logic"
+      value={config?.conditionLogic ?? ""}
+      onChange={(event) => {
+        onUpdateNode(node.id, {
+          config: {
+            ...(node.data.config as Record<string, unknown>),
+            conditionLogic: event.target.value,
+          },
+        });
+      }}
+      placeholder="Example: revenue > 10000"
+      rows={4}
+      className="mt-2 w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-purple-400/60"
+    />
+
+    <p className="mt-1 text-[10px] text-slate-600">
+      Define the logic used to evaluate this condition.
+    </p>
+  </div>
+)}
+{node.data.type === "hitl" && (
+  <div>
+    <label
+      htmlFor="approval-role"
+      className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    >
+      Required Approval Role
+    </label>
+
+    <input
+      id="approval-role"
+      type="text"
+      value={config?.requireApprovalRole ?? ""}
+      onChange={(event) => {
+        onUpdateNode(node.id, {
+          config: {
+            ...(node.data.config as Record<string, unknown>),
+            requireApprovalRole: event.target.value,
+          },
+        });
+      }}
+      placeholder="Example: manager"
+      className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-rose-400/60"
+    />
+
+    <p className="mt-1 text-[10px] text-slate-600">
+      Role required to approve this workflow step.
+    </p>
+  </div>
+)}
       </div>
     </aside>
   );
