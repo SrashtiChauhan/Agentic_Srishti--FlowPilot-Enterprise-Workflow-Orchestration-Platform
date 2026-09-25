@@ -12,17 +12,10 @@ type WorkflowNodeData = {
   title: string;
   subtitle?: string;
   type: string;
-  status:
-    | "idle"
-    | "running"
-    | "completed"
-    | "failed"
-    | "waiting_approval";
+  status: "idle" | "running" | "completed" | "failed" | "waiting_approval";
 };
 
 type WorkflowNodeType = Node<WorkflowNodeData>;
-
-
 
 const nodeStyles: Record<string, string> = {
   trigger: "border-amber-400/60 shadow-amber-500/10",
@@ -40,11 +33,37 @@ const badgeStyles: Record<string, string> = {
   action: "bg-emerald-400/10 text-emerald-400",
 };
 
+const statusStyles: Record<
+  WorkflowNodeData["status"],
+  { label: string; className: string }
+> = {
+  idle: {
+    label: "Idle",
+    className: "text-slate-500",
+  },
+  running: {
+    label: "Running",
+    className: "text-cyan-400 animate-pulse",
+  },
+  completed: {
+    label: "Completed",
+    className: "text-emerald-400",
+  },
+  failed: {
+    label: "Failed",
+    className: "text-red-400",
+  },
+  waiting_approval: {
+    label: "Waiting Approval",
+    className: "text-rose-400 animate-pulse",
+  },
+};
 export default function WorkflowNode({
   data,
   selected,
 }: NodeProps<WorkflowNodeType>) {
   const nodeType = data.type ?? "action";
+  const status = statusStyles[data.status];
 
   return (
     <>
@@ -75,17 +94,15 @@ export default function WorkflowNode({
           {nodeType}
         </div>
 
-        <h3 className="text-sm font-semibold text-slate-100">
-          {data.title}
-        </h3>
+        <h3 className="text-sm font-semibold text-slate-100">{data.title}</h3>
 
         <p className="mt-1 text-xs text-slate-400">
           {data.subtitle ?? "Workflow node"}
         </p>
 
         <div className="mt-3 border-t border-slate-800 pt-3">
-          <span className="font-mono text-[11px] text-slate-500">
-            Status: Idle
+          <span className={`font-mono text-[11px] ${status.className}`}>
+            Status: {status.label}
           </span>
         </div>
 

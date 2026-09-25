@@ -57,10 +57,10 @@ export default function WorkflowCanvas({
         <Background gap={20} size={1} />
         <Controls position="bottom-left" />
         <MiniMap
-  className="!bg-slate-900 !border !border-slate-700"
-  nodeColor="#475569"
-  maskColor="rgba(2, 6, 23, 0.7)"
-/>
+          className="!bg-slate-900 !border !border-slate-700"
+          nodeColor="#475569"
+          maskColor="rgba(2, 6, 23, 0.7)"
+        />
       </ReactFlow>
     </div>
   );
