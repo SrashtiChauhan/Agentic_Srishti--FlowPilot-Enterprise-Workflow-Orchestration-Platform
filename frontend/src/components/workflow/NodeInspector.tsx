@@ -178,6 +178,38 @@ export default function NodeInspector({
     />
   </div>
 )}
+{node.data.type === "agent" && (
+  <div>
+    <label
+      htmlFor="agent-temperature"
+      className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    >
+      Temperature
+    </label>
+
+    <input
+      id="agent-temperature"
+      type="number"
+      min="0"
+      max="1"
+      step="0.1"
+      value={config?.temperature ?? 0.7}
+      onChange={(event) => {
+        onUpdateNode(node.id, {
+          config: {
+            ...(node.data.config as Record<string, unknown>),
+            temperature: Number(event.target.value),
+          },
+        });
+      }}
+      className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-400/60"
+    />
+
+    <p className="mt-1 text-[10px] text-slate-600">
+      Range: 0–1
+    </p>
+  </div>
+)}
       </div>
     </aside>
   );
