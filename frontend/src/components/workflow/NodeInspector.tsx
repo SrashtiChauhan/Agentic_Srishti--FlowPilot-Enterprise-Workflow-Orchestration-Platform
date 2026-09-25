@@ -210,6 +210,35 @@ export default function NodeInspector({
     </p>
   </div>
 )}
+{node.data.type === "agent" && (
+  <div>
+    <label
+      htmlFor="agent-risk-score"
+      className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    >
+      Risk Score
+    </label>
+
+    <select
+      id="agent-risk-score"
+      value={config?.riskScore ?? "low"}
+      onChange={(event) => {
+        onUpdateNode(node.id, {
+          config: {
+            ...(node.data.config as Record<string, unknown>),
+            riskScore: event.target.value,
+          },
+        });
+      }}
+      className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-400/60"
+    >
+      <option value="low">Low</option>
+      <option value="medium">Medium</option>
+      <option value="high">High</option>
+      <option value="critical">Critical</option>
+    </select>
+  </div>
+)}
       </div>
     </aside>
   );
