@@ -1,6 +1,7 @@
 "use client";
 
 import type { Node } from "@xyflow/react";
+import type { WorkflowNodeConfig } from "@/types/workflow";
 
 interface NodeInspectorProps {
   node: Node | null;
@@ -10,6 +11,7 @@ export default function NodeInspector({
   node,
   onUpdateNode,
 }: NodeInspectorProps) {
+  const config = node?.data.config as WorkflowNodeConfig | undefined;
   if (!node) {
     return (
       <aside className="w-80 shrink-0 border-l border-slate-800 bg-slate-900/80 p-5 backdrop-blur-md">
@@ -95,15 +97,61 @@ export default function NodeInspector({
           />
         </div>
 
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            Status
-          </p>
+        {node.data.type === "trigger" && (
+  <div>
+    <label
+      htmlFor="trigger-type"
+      className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    >
+      Trigger Type
+    </label>
 
-          <p className="mt-1 font-mono text-xs uppercase text-slate-400">
-            {String(node.data.status)}
-          </p>
-        </div>
+    <select
+      id="trigger-type"
+      value={config?.triggerType ?? "manual"}
+      onChange={(event) => {
+        onUpdateNode(node.id, {
+          config: {
+            ...(node.data.config as Record<string, unknown>),
+            triggerType: event.target.value,
+          },
+        });
+      }}
+      className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-amber-400/60"
+    >
+      <option value="manual">Manual</option>
+      <option value="webhook">Webhook</option>
+      <option value="schedule">Schedule</option>
+      <option value="event">Event</option>
+    </select>
+  </div>
+)}
+{node.data.type === "agent" && (
+  <div>
+    <label
+      htmlFor="agent-id"
+      className="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    >
+      Agent ID
+    </label>
+
+    <input
+      id="agent-id"
+      type="text"
+      value={config?.agentId ?? ""}
+      onChange={(event) => {
+        onUpdateNode(node.id, {
+          config: {
+            ...(node.data.config as Record<string, unknown>),
+            agentId: event.target.value,
+          },
+        });
+      }}
+      placeholder="Enter agent ID"
+      className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-400/60"
+    />
+  </div>
+)}
       </div>
     </aside>
   );
