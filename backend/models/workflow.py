@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Literal
 
 
@@ -29,7 +29,7 @@ class WorkflowNodeConfig(BaseModel):
     actionType:Literal["slack", "jira", "email", "database", "github","api",] | None=None
     conditionLogic:str|None=None
     prompt:str|None=None
-    temperature:float | None
+    temperature:float | None=Field(default=None,ge=0,le=1)
     riskScore: Literal["low", "medium","high","critical"] | None=None
     requireApprovalRole: str | None=None
 
