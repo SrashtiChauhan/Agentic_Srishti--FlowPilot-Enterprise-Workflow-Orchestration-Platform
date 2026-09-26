@@ -23,6 +23,17 @@ class WorkflowNodePosition(BaseModel):
     x:float
     y:float
 
+class WorkflowNodeConfig(BaseModel):
+    agentId:str|None=None
+    triggerType:Literal["webhook", "schedule", "event", "manual"] | None=None
+    actionType:Literal["slack", "jira", "email", "database", "github","api",] | None=None
+    conditionLogic:str|None=None
+    prompt:str|None=None
+    temperature:float | None
+    riskScore: Literal["low", "medium","high","critical"] | None=None
+    requireApprovalRole: str | None=None
+
+
 
 class WorkflowNode(BaseModel):
     id:str
@@ -31,6 +42,7 @@ class WorkflowNode(BaseModel):
     subtitle:str | None=None
     position:WorkflowNodePosition
     status:WorkflowNodeStatus
+    config:WorkflowNodeConfig
 
 class Workflow(BaseModel):
     id:str
