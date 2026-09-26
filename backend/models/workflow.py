@@ -55,3 +55,5 @@ class Workflow(BaseModel):
     name:str
     description: str | None = None
     status: Literal["Draft", "Active", "Paused"]
+    nodes:list[WorkflowNode]=[]
+    edges:list[WorkflowEdge]=[]
