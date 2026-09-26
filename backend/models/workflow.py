@@ -37,7 +37,7 @@ class WorkflowNodeConfig(BaseModel):
 
 class WorkflowNode(BaseModel):
     id:str
-    type:str
+    type:WorkflowNodeType
     title:str
     subtitle:str | None=None
     position:WorkflowNodePosition
