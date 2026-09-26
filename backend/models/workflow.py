@@ -44,6 +44,12 @@ class WorkflowNode(BaseModel):
     status:WorkflowNodeStatus
     config:WorkflowNodeConfig
 
+
+class WorkflowEdge(BaseModel):
+    id:str
+    source:str
+    target:str
+
 class Workflow(BaseModel):
     id:str
     name:str
