@@ -11,6 +11,13 @@ WorkflowNodeType = Literal[
     "action",
     "webhook",
 ]
+WorkflowNodeStatus=Literal [
+    "idle",
+    "running",
+    "completed",
+    "failed",
+    "waiting_approval",
+]
 
 class WorkflowNodePosition(BaseModel):
     x:float
@@ -23,6 +30,7 @@ class WorkflowNode(BaseModel):
     title:str
     subtitle:str | None=None
     position:WorkflowNodePosition
+    status:WorkflowNodeStatus
 
 class Workflow(BaseModel):
     id:str
