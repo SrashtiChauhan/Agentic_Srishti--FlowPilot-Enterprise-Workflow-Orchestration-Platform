@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 from typing import Literal
+
+
+
 WorkflowNodeType = Literal[
     "trigger",
     "agent",
@@ -9,12 +12,17 @@ WorkflowNodeType = Literal[
     "webhook",
 ]
 
+class WorkflowNodePosition(BaseModel):
+    x:float
+    y:float
+
 
 class WorkflowNode(BaseModel):
     id:str
     type:str
     title:str
     subtitle:str | None=None
+    position:WorkflowNodePosition
 
 class Workflow(BaseModel):
     id:str
