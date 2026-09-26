@@ -8,6 +8,14 @@ WorkflowNodeType = Literal[
     "action",
     "webhook",
 ]
+
+
+class WorkflowNode(BaseModel):
+    id:str
+    type:str
+    title:str
+    subtitle:str | None=None
+
 class Workflow(BaseModel):
     id:str
     name:str
