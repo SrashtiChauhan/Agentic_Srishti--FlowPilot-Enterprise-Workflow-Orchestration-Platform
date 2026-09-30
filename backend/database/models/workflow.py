@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.database.base import Base
@@ -15,3 +15,5 @@ class WorkflowDB(Base):
         nullable=False,
         default="Draft",
     )
+    nodes:Mapped[list]=mapped_column(JSON, nullable=False, default=list)
+    edges:Mapped[list]=mapped_column(JSON, nullable=False, default=list)
