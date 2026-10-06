@@ -16,4 +16,11 @@ engine = create_engine(
 
 from backend.database.models.workflow import WorkflowDB
 Base.metadata.create_all(bind=engine)
- 
+
+def get_db():
+    from sqlalchemy.orm import Session
+    db=Session(engine)
+    try:
+        yield db
+    finally:
+        db.close()
