@@ -1,10 +1,12 @@
-from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from backend.database.database import get_db
-from backend.database.models import workflow
 from backend.database.models.workflow import WorkflowDB
-from sqlalchemy import select
+from backend.schemas.workflow import WorkflowCreate
+
+import uuid
 
 
 router=APIRouter(
@@ -28,7 +30,7 @@ async def create_workflow(
     db: Session = Depends(get_db),
 ):
     new_workflow = WorkflowDB(
-        id="temporary-id",
+        id=str(uuid.uuid4()),
         name=workflow.name,
         description=workflow.description,
         status=workflow.status,
