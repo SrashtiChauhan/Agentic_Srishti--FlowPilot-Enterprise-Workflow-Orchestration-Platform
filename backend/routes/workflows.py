@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
+
+from backend.database.database import get_db
 
 router=APIRouter(
     prefix="/workflows",
@@ -7,7 +10,7 @@ router=APIRouter(
 )
 
 @router.get("/")
-async def get_workflows():
+async def get_workflows(db:Session=Depends(get_db)):from sqlalchemy.orm import Session
     return{
         "message":"Workflows endpoint is working",
         "workflows":[],
