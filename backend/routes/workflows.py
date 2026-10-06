@@ -10,7 +10,7 @@ router=APIRouter(
 )
 
 @router.get("/")
-async def get_workflows(db:Session=Depends(get_db)):from sqlalchemy.orm import Session
+async def get_workflows(db:Session=Depends(get_db)):
     return{
         "message":"Workflows endpoint is working",
         "workflows":[],
