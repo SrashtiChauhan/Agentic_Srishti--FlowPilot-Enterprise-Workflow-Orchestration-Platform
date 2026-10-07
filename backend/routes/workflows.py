@@ -24,6 +24,24 @@ async def get_workflows(db:Session=Depends(get_db)):
         "workflows":workflows,
     }
 
+@router.get("/{workflow_id}")
+async def get_workflow(
+    workflow_id: str,
+    db: Session = Depends(get_db),
+):
+    result = db.execute(
+        select(WorkflowDB).where(WorkflowDB.id == workflow_id)
+    )
+
+    workflow = result.scalar_one_or_none()
+
+    if workflow is None:
+        return {
+            "message": "Workflow not found",
+        }
+
+    return workflow
+
 @router.post("/")
 async def create_workflow(
     workflow: WorkflowCreate,
