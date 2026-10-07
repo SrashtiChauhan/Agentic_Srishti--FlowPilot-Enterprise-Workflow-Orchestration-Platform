@@ -75,3 +75,28 @@ async def update_workflow(
     db.refresh(existing_workflow)
 
     return existing_workflow
+
+
+@router.delete("/{workflow_id}")
+async def delete_workflow(
+    workflow_id: str,
+    db: Session = Depends(get_db),
+):
+    result = db.execute(
+        select(WorkflowDB).where(WorkflowDB.id == workflow_id)
+    )
+
+    existing_workflow = result.scalar_one_or_none()
+
+    if existing_workflow is None:
+        return {
+            "message": "Workflow not found",
+        }
+
+    db.delete(existing_workflow)
+    db.commit()
+
+    return {
+        "message": "Workflow deleted successfully",
+        "id": workflow_id,
+    }
