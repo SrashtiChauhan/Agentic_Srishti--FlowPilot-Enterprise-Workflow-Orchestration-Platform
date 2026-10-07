@@ -354,3 +354,22 @@ CREATE → PostgreSQL → READ → UPDATE → DELETE
 - Workflow nodes and edges are currently stored as JSON fields inside the workflow record.
 - UUIDs are generated at the API layer when creating new workflows.
 
+## Database Migrations — Alembic
+
+### Completed
+
+- Installed Alembic in the backend virtual environment.
+- Initialized Alembic under `backend/alembic/`.
+- Connected Alembic to the existing SQLAlchemy `Base.metadata`.
+- Configured Alembic to read `DATABASE_URL` from `backend/.env`.
+- Verified Alembic can connect to PostgreSQL.
+- Generated the initial migration revision:
+  `20e06f16a285`
+- The initial migration is empty because the `workflows` table already existed.
+- Stamped the existing PostgreSQL database at the initial Alembic revision.
+- Verified the database is currently at Alembic `HEAD`.
+
+### Migration State
+
+```text
+20e06f16a285 (head)
