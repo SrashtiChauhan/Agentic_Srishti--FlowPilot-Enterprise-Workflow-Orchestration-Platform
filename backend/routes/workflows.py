@@ -43,3 +43,35 @@ async def create_workflow(
     db.refresh(new_workflow)
 
     return new_workflow
+
+@router.put("/{workflow_id}")
+async def update_workflow(
+    workflow_id: str,
+    workflow: WorkflowCreate,
+    db: Session = Depends(get_db),
+):
+    result = db.execute(
+        select(WorkflowDB).where(WorkflowDB.id == workflow_id)
+    )
+
+    existing_workflow = result.scalar_one_or_none()
+
+    if existing_workflow is None:
+        return {
+            "message": "Workflow not found",
+        }
+
+    existing_workflow.name = workflow.name
+    existing_workflow.description = workflow.description
+    existing_workflow.status = workflow.status
+    existing_workflow.nodes = [
+        node.model_dump() for node in workflow.nodes
+    ]
+    existing_workflow.edges = [
+        edge.model_dump() for edge in workflow.edges
+    ]
+
+    db.commit()
+    db.refresh(existing_workflow)
+
+    return existing_workflow
