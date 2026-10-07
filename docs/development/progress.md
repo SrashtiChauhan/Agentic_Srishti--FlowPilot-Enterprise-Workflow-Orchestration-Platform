@@ -300,3 +300,47 @@ frontend/
 ### One important point
 
 This document records **what i actually completed**, rather than claiming that backend/execution features already exist. 
+
+
+## Week 3 — Workflow Persistence & CRUD API
+
+### Completed
+
+- Created FastAPI backend workflow routes.
+- Created Pydantic workflow models and validation.
+- Created `WorkflowCreate` request schema.
+- Configured PostgreSQL 16 database.
+- Configured SQLAlchemy ORM.
+- Created `workflows` database table.
+- Added database session dependency with `get_db()`.
+- Implemented workflow creation API.
+- Implemented workflow listing API.
+- Implemented workflow update API.
+- Implemented workflow deletion API.
+- Verified CRUD operations using `curl`.
+- Verified that workflow changes persist in PostgreSQL.
+- Added UUID generation for newly created workflows.
+
+### Current API
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/workflows/` | Fetch all workflows |
+| POST | `/workflows/` | Create a workflow |
+| PUT | `/workflows/{workflow_id}` | Update a workflow |
+| DELETE | `/workflows/{workflow_id}` | Delete a workflow |
+
+### Verification
+
+The complete workflow CRUD cycle has been tested successfully:
+
+```text
+CREATE → PostgreSQL → READ → UPDATE → DELETE
+
+### Implementation Notes
+- PostgreSQL is used as the persistent storage layer.
+- SQLAlchemy is used as the ORM.
+- Pydantic is used for request validation and serialization.
+- Workflow nodes and edges are currently stored as JSON fields inside the workflow record.
+- UUIDs are generated at the API layer when creating new workflows.
+
