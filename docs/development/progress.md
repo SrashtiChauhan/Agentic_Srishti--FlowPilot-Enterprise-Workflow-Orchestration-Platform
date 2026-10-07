@@ -326,9 +326,19 @@ This document records **what i actually completed**, rather than claiming that b
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/workflows/` | Fetch all workflows |
+| GET | `/workflows/{workflow_id}` | Fetch one workflow |
 | POST | `/workflows/` | Create a workflow |
 | PUT | `/workflows/{workflow_id}` | Update a workflow |
 | DELETE | `/workflows/{workflow_id}` | Delete a workflow |
+
+### Single Workflow Retrieval
+
+The API supports fetching an individual workflow using its unique workflow ID.
+
+Example:
+
+```text
+GET /workflows/{workflow_id}
 
 ### Verification
 
