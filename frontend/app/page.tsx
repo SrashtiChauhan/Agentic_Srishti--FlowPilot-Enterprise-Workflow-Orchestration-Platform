@@ -1,22 +1,23 @@
-const workflows = [
-  {
-    name: "Customer Support Automation",
-    status: "Active",
-    updated: "2 minutes ago",
-  },
-  {
-    name: "Invoice Approval Pipeline",
-    status: "Draft",
-    updated: "1 hour ago",
-  },
-  {
-    name: "Lead Qualification Agent",
-    status: "Active",
-    updated: "Yesterday",
-  },
-];
+"use client";
+
+import { useEffect, useState } from "react";
+import { getWorkflows } from "@/lib/api";
 
 export default function Home() {
+  const [workflows, setWorkflows] = useState<
+    {
+      id: string;
+      name: string;
+      description?: string;
+      status: "Draft" | "Active" | "Paused";
+    }[]
+  >([]);
+
+  useEffect(() => {
+    getWorkflows().then((data) => {
+      setWorkflows(data.workflows);
+    });
+  }, []);
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100 md:px-10">
       <div className="mx-auto max-w-7xl">
@@ -78,7 +79,7 @@ export default function Home() {
                 <div>
                   <h3 className="font-medium">{workflow.name}</h3>
                   <p className="mt-1 text-sm text-slate-500">
-                    Updated {workflow.updated}
+                    {workflow.description ?? "No description provided"}
                   </p>
                 </div>
 
