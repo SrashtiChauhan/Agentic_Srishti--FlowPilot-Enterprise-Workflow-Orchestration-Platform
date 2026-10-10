@@ -14,7 +14,7 @@ import {
 } from "@xyflow/react";
 
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas";
-import { createWorkflow, updateWorkflow } from "@/lib/api";
+import { createWorkflow, getWorkflow, updateWorkflow } from "@/lib/api";
 import NodeInspector from "@/components/workflow/NodeInspector";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNodeType } from "@/types/workflow";

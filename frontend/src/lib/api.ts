@@ -9,6 +9,19 @@ export async function getWorkflows() {
 
   return response.json();
 }
+
+export async function getWorkflow(workflowId: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/workflows/${workflowId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch workflow");
+  }
+
+  return response.json();
+}
+
 export async function createWorkflow(workflow: {
   name: string;
   description?: string;

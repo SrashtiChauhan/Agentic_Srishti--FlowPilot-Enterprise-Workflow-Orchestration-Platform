@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getWorkflows } from "@/lib/api";
 
 export default function Home() {
@@ -92,6 +93,12 @@ export default function Home() {
                 >
                   {workflow.status}
                 </span>
+                <Link
+                  href={`/workflows/new?workflowId=${workflow.id}`}
+                  className="text-sm font-medium text-cyan-400 transition hover:text-cyan-300"
+                >
+                  Open Workflow →
+                </Link>
               </div>
             ))}
           </div>
