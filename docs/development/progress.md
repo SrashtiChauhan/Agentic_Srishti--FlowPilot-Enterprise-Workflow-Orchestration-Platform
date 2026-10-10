@@ -373,3 +373,23 @@ CREATE → PostgreSQL → READ → UPDATE → DELETE
 
 ```text
 20e06f16a285 (head)
+
+### Week 3 — Workflow Persistence Verification
+
+**Status: Completed**
+
+- Connected the workflow editor to the FastAPI backend.
+- Implemented workflow creation using `POST /workflows/`.
+- Implemented workflow updates using `PUT /workflows/{workflow_id}`.
+- Persisted workflow nodes and edges in PostgreSQL.
+- Stored the workflow ID, graph, and name in browser `localStorage`.
+- Restored the saved graph, workflow ID, and name after refreshing the editor.
+- Verified that subsequent saves update the existing database record.
+- Verified persistence directly using PostgreSQL queries.
+- Confirmed that the frontend production build succeeds.
+
+**Verification result:** Workflow `e7239a7d-9199-49ae-9a3b-0364f98ab9c4` was retrieved from PostgreSQL with the name `FlowPilot Persistence Test.` and status `Draft`.
+
+**Known limitation:** The editor restores its graph from browser `localStorage`. Loading a workflow independently from the dashboard by its database ID is a separate feature and is not yet implemented.
+
+**Next:** Review workflow persistence implementation, commit the verified changes, and proceed to the next roadmap task.
