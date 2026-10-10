@@ -14,7 +14,7 @@ import {
 } from "@xyflow/react";
 
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas";
-import { createWorkflow } from "@/lib/api";
+import { createWorkflow, updateWorkflow } from "@/lib/api";
 import NodeInspector from "@/components/workflow/NodeInspector";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNodeType } from "@/types/workflow";
@@ -32,6 +32,7 @@ export default function NewWorkflowPage() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [workflowName, setWorkflowName] = useState("Untitled Workflow");
+  const [savedWorkflowId, setSavedWorkflowId] = useState<string | null>(null);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>(null);
   useEffect(() => {
@@ -43,6 +44,9 @@ export default function NewWorkflowPage() {
 
     try {
       const workflowGraph = JSON.parse(savedWorkflow);
+      if (typeof workflowGraph.name === "string") {
+        setWorkflowName(workflowGraph.name);
+      }
 
       if (
         Array.isArray(workflowGraph.nodes) &&
@@ -165,18 +169,57 @@ export default function NewWorkflowPage() {
 
   const saveWorkflow = async () => {
     try {
-      const savedWorkflow = await createWorkflow({
+      const workflowData = {
         name: workflowName,
         description: "Workflow created from FlowPilot editor",
-        status: "Draft",
+        status: "Draft" as const,
         nodes,
         edges,
-      });
+      };
+      const savedDraft = localStorage.getItem("flowpilot-workflow-draft");
 
-      console.log("Workflow saved to database:", savedWorkflow);
+      const draftWorkflowId = savedDraft
+        ? JSON.parse(savedDraft).workflowId
+        : null;
+
+      let workflowIdToSave = savedWorkflowId ?? draftWorkflowId ?? null;
+
+      if (workflowIdToSave) {
+        const updatedWorkflow = await updateWorkflow(
+          workflowIdToSave,
+          workflowData,
+        );
+
+        console.log("Workflow updated in database:", updatedWorkflow);
+      } else {
+        const createdWorkflow = await createWorkflow(workflowData);
+
+        setSavedWorkflowId(createdWorkflow.id);
+        workflowIdToSave = createdWorkflow.id;
+        localStorage.setItem(
+          "flowpilot-workflow-draft",
+          JSON.stringify({
+            nodes,
+            edges,
+            name: workflowName,
+            workflowId: createdWorkflow.id,
+          }),
+        );
+
+        console.log("Workflow saved to database:", createdWorkflow);
+      }
+
+      localStorage.setItem(
+        "flowpilot-workflow-draft",
+        JSON.stringify({
+          nodes,
+          edges,
+          name: workflowName,
+          workflowId: workflowIdToSave ?? undefined,
+        }),
+      );
 
       setIsSaved(true);
-
       setTimeout(() => setIsSaved(false), 2000);
     } catch (error) {
       console.error("Failed to save workflow:", error);
