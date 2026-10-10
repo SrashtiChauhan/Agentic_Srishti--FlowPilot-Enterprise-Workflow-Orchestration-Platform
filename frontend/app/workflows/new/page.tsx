@@ -14,6 +14,7 @@ import {
 } from "@xyflow/react";
 
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas";
+import { createWorkflow } from "@/lib/api";
 import NodeInspector from "@/components/workflow/NodeInspector";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNodeType } from "@/types/workflow";
@@ -30,8 +31,9 @@ export default function NewWorkflowPage() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [workflowName, setWorkflowName] = useState("Untitled Workflow");
   const [reactFlowInstance, setReactFlowInstance] =
-  useState<ReactFlowInstance | null>(null);
+    useState<ReactFlowInstance | null>(null);
   useEffect(() => {
     const savedWorkflow = localStorage.getItem("flowpilot-workflow-draft");
 
@@ -161,66 +163,66 @@ export default function NewWorkflowPage() {
     [edges, onEdgesChange, setEdgesInStore],
   );
 
-  const saveWorkflow = () => {
-    const workflowGraph = {
-      nodes,
-      edges,
-    };
+  const saveWorkflow = async () => {
+    try {
+      const savedWorkflow = await createWorkflow({
+        name: workflowName,
+        description: "Workflow created from FlowPilot editor",
+        status: "Draft",
+        nodes,
+        edges,
+      });
 
-    localStorage.setItem(
-      "flowpilot-workflow-draft",
-      JSON.stringify(workflowGraph),
-    );
+      console.log("Workflow saved to database:", savedWorkflow);
 
-    console.log("Workflow saved locally:", workflowGraph);
+      setIsSaved(true);
 
-    setIsSaved(true);
-
-    setTimeout(() => {
-      setIsSaved(false);
-    }, 2000);
+      setTimeout(() => setIsSaved(false), 2000);
+    } catch (error) {
+      console.error("Failed to save workflow:", error);
+    }
   };
 
   const addWorkflowNode = (type: WorkflowNodeType, title: string) => {
-  if (!reactFlowInstance) {
-    return;
-  }
+    if (!reactFlowInstance) {
+      return;
+    }
 
-  const position = reactFlowInstance.screenToFlowPosition({
-    x: window.innerWidth / 2 - 110,
-    y: window.innerHeight / 2 - 70,
-  });
+    const position = reactFlowInstance.screenToFlowPosition({
+      x: window.innerWidth / 2 - 110,
+      y: window.innerHeight / 2 - 70,
+    });
 
-  const newNode: Node = {
-    id: `${type}-${Date.now()}`,
-    type: "workflowNode",
-    position,
-    data: {
+    const newNode: Node = {
+      id: `${type}-${Date.now()}`,
+      type: "workflowNode",
+      position,
+      data: {
+        title,
+        subtitle: `Configure your ${title.toLowerCase()} node`,
+        type,
+        status: "idle",
+        config: {},
+      },
+    };
+
+    addNodeToStore({
+      id: newNode.id,
+      type,
       title,
       subtitle: `Configure your ${title.toLowerCase()} node`,
-      type,
+      position: newNode.position,
       status: "idle",
       config: {},
-    },
+    });
+
+    setNodes((currentNodes) => [...currentNodes, newNode]);
   };
-
-  addNodeToStore({
-    id: newNode.id,
-    type,
-    title,
-    subtitle: `Configure your ${title.toLowerCase()} node`,
-    position: newNode.position,
-    status: "idle",
-    config: {},
-  });
-
-  setNodes((currentNodes) => [...currentNodes, newNode]);
-};
 
   return (
     <main className="flex h-screen flex-col overflow-hidden bg-slate-950 text-white">
       {/* Header */}
-      <header className="flex h-20 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-950 px-6">
+      <header className="flex min-h-20 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-950 px-6 py-3">
         <div>
           <Link
             href="/"
@@ -232,6 +234,13 @@ export default function NewWorkflowPage() {
           <h1 className="mt-1 text-lg font-extrabold tracking-tight text-white">
             Create New Workflow
           </h1>
+          <input
+            type="text"
+            value={workflowName}
+            onChange={(event) => setWorkflowName(event.target.value)}
+            className="mt-2 w-72 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+            placeholder="Workflow name"
+          />
         </div>
 
         <button
