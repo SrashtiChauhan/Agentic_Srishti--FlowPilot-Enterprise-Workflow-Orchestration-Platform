@@ -35,34 +35,146 @@ export default function NewWorkflowPage() {
   const [savedWorkflowId, setSavedWorkflowId] = useState<string | null>(null);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>(null);
+
   useEffect(() => {
-    const savedWorkflow = localStorage.getItem("flowpilot-workflow-draft");
+    async function loadWorkflow() {
+      const params = new URLSearchParams(window.location.search);
+      const workflowId = params.get("workflowId");
 
-    if (!savedWorkflow) {
-      return;
-    }
+      // If a workflow ID is in the URL, load that workflow from the backend.
+      if (workflowId) {
+        try {
+          const response = await getWorkflow(workflowId);
 
-    try {
-      const workflowGraph = JSON.parse(savedWorkflow);
-      if (typeof workflowGraph.name === "string") {
-        setWorkflowName(workflowGraph.name);
+          if (
+            !response ||
+            response.message === "Workflow not found" ||
+            !Array.isArray(response.nodes) ||
+            !Array.isArray(response.edges)
+          ) {
+            throw new Error("The requested workflow could not be found.");
+          }
+
+          const loadedNodes: Node[] = response.nodes.map(
+            (node: {
+              id: string;
+              type: WorkflowNodeType;
+              title: string;
+              subtitle?: string;
+              position: { x: number; y: number };
+              status:
+                | "idle"
+                | "running"
+                | "completed"
+                | "failed"
+                | "waiting_approval";
+              config?: Record<string, unknown>;
+            }) => ({
+              id: node.id,
+              type: "workflowNode",
+              position: node.position,
+              data: {
+                title: node.title,
+                subtitle: node.subtitle,
+                type: node.type,
+                status: node.status,
+                config: node.config ?? {},
+              },
+            }),
+          );
+
+          const loadedEdges: Edge[] = response.edges.map(
+            (edge: { id: string; source: string; target: string }) => ({
+              id: edge.id,
+              source: edge.source,
+              target: edge.target,
+            }),
+          );
+
+          setWorkflowName(response.name);
+          setNodes(loadedNodes);
+          setEdges(loadedEdges);
+
+          // Zustand stores FlowPilot's node format, not React Flow's format.
+          useWorkflowStore.getState().setNodes(
+            response.nodes.map(
+              (node: {
+                id: string;
+                type: WorkflowNodeType;
+                title: string;
+                subtitle?: string;
+                position: { x: number; y: number };
+                status:
+                  | "idle"
+                  | "running"
+                  | "completed"
+                  | "failed"
+                  | "waiting_approval";
+                config?: Record<string, unknown>;
+              }) => ({
+                id: node.id,
+                type: node.type,
+                title: node.title,
+                subtitle: node.subtitle,
+                position: node.position,
+                status: node.status,
+                config: node.config ?? {},
+              }),
+            ),
+          );
+
+          useWorkflowStore.getState().setEdges(loadedEdges);
+
+          localStorage.setItem(
+            "flowpilot-workflow-draft",
+            JSON.stringify({
+              name: response.name,
+              nodes: loadedNodes,
+              edges: loadedEdges,
+              workflowId: response.id,
+            }),
+          );
+
+          console.log("Workflow loaded from database:", response);
+        } catch (error) {
+          console.error("Failed to load workflow from database:", error);
+        }
+
+        return;
       }
 
-      if (
-        Array.isArray(workflowGraph.nodes) &&
-        Array.isArray(workflowGraph.edges)
-      ) {
-        setNodes(workflowGraph.nodes);
-        setEdges(workflowGraph.edges);
+      // No workflow ID: preserve the existing local-draft behavior.
+      const savedWorkflow = localStorage.getItem("flowpilot-workflow-draft");
 
-        useWorkflowStore.getState().setNodes(workflowGraph.nodes);
-        useWorkflowStore.getState().setEdges(workflowGraph.edges);
-
-        console.log("Workflow loaded locally:", workflowGraph);
+      if (!savedWorkflow) {
+        return;
       }
-    } catch (error) {
-      console.error("Failed to load saved workflow:", error);
+
+      try {
+        const workflowGraph = JSON.parse(savedWorkflow);
+
+        if (typeof workflowGraph.name === "string") {
+          setWorkflowName(workflowGraph.name);
+        }
+
+        if (
+          Array.isArray(workflowGraph.nodes) &&
+          Array.isArray(workflowGraph.edges)
+        ) {
+          setNodes(workflowGraph.nodes);
+          setEdges(workflowGraph.edges);
+
+          useWorkflowStore.getState().setNodes(workflowGraph.nodes);
+          useWorkflowStore.getState().setEdges(workflowGraph.edges);
+
+          console.log("Workflow loaded locally:", workflowGraph);
+        }
+      } catch (error) {
+        console.error("Failed to load saved workflow:", error);
+      }
     }
+
+    void loadWorkflow();
   }, [setNodes, setEdges]);
 
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
@@ -352,7 +464,7 @@ export default function NewWorkflowPage() {
         </aside>
 
         {/* Full Canvas */}
-        <section className="relative min-w-0 flex-1">
+        <section className="relative min-h-0 min-w-0 flex-1 h-full">
           <WorkflowCanvas
             nodes={nodes}
             edges={edges}

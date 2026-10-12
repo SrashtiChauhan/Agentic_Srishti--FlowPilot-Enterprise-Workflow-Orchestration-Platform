@@ -393,3 +393,18 @@ CREATE → PostgreSQL → READ → UPDATE → DELETE
 **Known limitation:** The editor restores its graph from browser `localStorage`. Loading a workflow independently from the dashboard by its database ID is a separate feature and is not yet implemented.
 
 **Next:** Review workflow persistence implementation, commit the verified changes, and proceed to the next roadmap task.
+
+### Workflow Persistence — Verification Complete
+
+**Status:** Completed and verified
+
+- Connected the Next.js workflow dashboard and editor to the FastAPI backend.
+- Implemented workflow creation, retrieval, updating, and deletion endpoints.
+- Persisted workflow metadata, nodes, and edges in PostgreSQL.
+- Verified that saved workflows can be reopened from the database.
+- Verified that nodes and connections are restored after refreshing the browser.
+- Confirmed that the Next.js production build passes, including TypeScript checks.
+
+**Known issue:** React Flow error 004 (parent container dimensions) still appears in the development console. The canvas has measurable dimensions, and workflow persistence works, but the warning remains unresolved.
+
+**Next:** Review the remaining Week 3 requirements in the development plan before beginning the next milestone.

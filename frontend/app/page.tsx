@@ -74,7 +74,7 @@ export default function Home() {
           <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
             {workflows.map((workflow) => (
               <div
-                key={workflow.name}
+                key={workflow.id}
                 className="flex flex-col gap-3 border-b border-slate-800 p-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>

@@ -41,7 +41,8 @@ export default function WorkflowCanvas({
   onInit,
 }: WorkflowCanvasProps) {
   return (
-    <div className="relative h-full min-h-0 w-full overflow-hidden rounded-xl border border-slate-700">
+
+<div className="relative h-full min-h-[400px] w-full overflow-hidden rounded-xl border border-slate-700">
       <ReactFlow
         nodes={nodes}
         edges={edges}
