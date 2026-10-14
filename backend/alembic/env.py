@@ -31,6 +31,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 from backend.database.base import Base
 from backend.database.models.workflow import WorkflowDB
+from backend.database.models.agent import AgentDB
 
 target_metadata = Base.metadata
 

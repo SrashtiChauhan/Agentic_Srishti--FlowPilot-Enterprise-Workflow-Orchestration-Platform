@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.workflows import router as workflow_router
+from backend.routes.agents import router as agent_router
 
 app=FastAPI(
     title="FlowPilot API",
@@ -15,6 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(workflow_router)
+app.include_router(agent_router)
 
 @app.get("/health")
 async def health_check():
