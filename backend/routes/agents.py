@@ -36,6 +36,52 @@ def create_agent(
     db.commit()
     db.refresh(new_agent)
 
+
+@router.get("/")
+def get_agents(db: Session = Depends(get_db)):
+    agents = db.query(AgentDB).order_by(AgentDB.name).all()
+
+    return {
+        "agents": [
+            {
+                "id": agent.id,
+                "name": agent.name,
+                "description": agent.description,
+                "provider": agent.provider,
+                "model_name": agent.model_name,
+                "system_prompt": agent.system_prompt,
+                "temperature": agent.temperature,
+                "tool_bindings": agent.tool_bindings,
+                "risk_score": agent.risk_score,
+            }
+            for agent in agents
+        ]
+    }
+
+@router.get("/{agent_id}")
+def get_agent(agent_id: str, db: Session = Depends(get_db)):
+    agent = db.query(AgentDB).filter(AgentDB.id == agent_id).first()
+
+    if agent is None:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=404,
+            detail="Agent not found",
+        )
+
+    return {
+        "id": agent.id,
+        "name": agent.name,
+        "description": agent.description,
+        "provider": agent.provider,
+        "model_name": agent.model_name,
+        "system_prompt": agent.system_prompt,
+        "temperature": agent.temperature,
+        "tool_bindings": agent.tool_bindings,
+        "risk_score": agent.risk_score,
+    }
+
+
     return {
         "message": "Agent created successfully",
         "agent": {
