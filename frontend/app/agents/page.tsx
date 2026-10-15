@@ -27,19 +27,21 @@ export default function AgentsPage() {
   const [form, setForm] = useState<AgentInput>(emptyAgent);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
 
-  const loadAgents = useCallback(async () => {
-    setLoading(true);
+ 
+const loadAgents = useCallback(async () => {
+  try {
+    const result = await getAgents();
+    setAgents(result.agents);
     setError("");
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to load agents",
+    );
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
-    try {
-      const result = await getAgents();
-      setAgents(result.agents);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load agents");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     void loadAgents();
@@ -86,22 +88,44 @@ export default function AgentsPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function handleDelete(agent: Agent) {
-    const confirmed = window.confirm(
-      `Delete "${agent.name}"? This action cannot be undone.`,
+  // async function handleDelete(agent: Agent) {
+  //   const confirmed = window.confirm(
+  //     `Delete "${agent.name}"? This action cannot be undone.`,
+  //   );
+
+  //   if (!confirmed) return;
+
+  //   setError("");
+
+  //   try {
+  //     await deleteAgent(agent.id);
+  //     await loadAgents();
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : "Failed to delete agent");
+  //   }
+  // }
+
+
+async function handleDelete(agent: Agent) {
+  const confirmed = window.confirm(
+    `Delete "${agent.name}"? This action cannot be undone.`,
+  );
+
+  if (!confirmed) return;
+
+  setError("");
+
+  try {
+    await deleteAgent(agent.id);
+    await loadAgents();
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to delete agent",
     );
-
-    if (!confirmed) return;
-
-    setError("");
-
-    try {
-      await deleteAgent(agent.id);
-      await loadAgents();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete agent");
-    }
   }
+}
+
+
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100 md:px-10">

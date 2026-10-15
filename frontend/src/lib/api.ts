@@ -1,3 +1,6 @@
+
+import type { Agent, AgentInput } from "@/types/agent";
+
 const API_BASE_URL = "http://127.0.0.1:8000";
 
 export async function getWorkflows() {
@@ -116,6 +119,91 @@ export async function updateWorkflow(
     console.error("Update workflow API error:", errorText);
 
     throw new Error("Failed to update workflow");
+  }
+
+  return response.json();
+}
+
+export async function getAgents(): Promise<{ agents: Agent[] }> {
+  const response = await fetch(`${API_BASE_URL}/agents/`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch agents");
+  }
+
+  return response.json();
+}
+
+export async function getAgent(agentId: string): Promise<Agent> {
+  const response = await fetch(
+    `${API_BASE_URL}/agents/${agentId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch agent");
+  }
+
+  return response.json();
+}
+
+export async function createAgent(
+  agent: AgentInput,
+): Promise<{ message: string; agent: Agent }> {
+  const response = await fetch(`${API_BASE_URL}/agents/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(agent),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Create agent API error:", errorText);
+    throw new Error("Failed to create agent");
+  }
+
+  return response.json();
+}
+
+export async function updateAgent(
+  agentId: string,
+  agent: AgentInput,
+): Promise<{ message: string; agent: Agent }> {
+  const response = await fetch(
+    `${API_BASE_URL}/agents/${agentId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(agent),
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Update agent API error:", errorText);
+    throw new Error("Failed to update agent");
+  }
+
+  return response.json();
+}
+
+export async function deleteAgent(
+  agentId: string,
+): Promise<{ message: string; id: string }> {
+  const response = await fetch(
+    `${API_BASE_URL}/agents/${agentId}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Delete agent API error:", errorText);
+    throw new Error("Failed to delete agent");
   }
 
   return response.json();
