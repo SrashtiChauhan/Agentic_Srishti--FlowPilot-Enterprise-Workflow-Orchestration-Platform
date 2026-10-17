@@ -1,5 +1,5 @@
-
 import type { Agent, AgentInput } from "@/types/agent";
+import type { Node, Edge } from "@xyflow/react";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -14,9 +14,7 @@ export async function getWorkflows() {
 }
 
 export async function getWorkflow(workflowId: string) {
-  const response = await fetch(
-    `${API_BASE_URL}/workflows/${workflowId}`,
-  );
+  const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch workflow");
@@ -29,8 +27,8 @@ export async function createWorkflow(workflow: {
   name: string;
   description?: string;
   status: "Draft" | "Active" | "Paused";
-  nodes: any[];
-  edges: any[];
+  nodes: Node[];
+  edges: Edge[];
 }) {
   const response = await fetch(`${API_BASE_URL}/workflows/`, {
     method: "POST",
@@ -79,8 +77,8 @@ export async function updateWorkflow(
     name: string;
     description?: string;
     status: "Draft" | "Active" | "Paused";
-    nodes: any[];
-    edges: any[];
+    nodes: Node[];
+    edges: Edge[];
   },
 ) {
   const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}`, {
@@ -135,9 +133,7 @@ export async function getAgents(): Promise<{ agents: Agent[] }> {
 }
 
 export async function getAgent(agentId: string): Promise<Agent> {
-  const response = await fetch(
-    `${API_BASE_URL}/agents/${agentId}`,
-  );
+  const response = await fetch(`${API_BASE_URL}/agents/${agentId}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch agent");
@@ -170,16 +166,13 @@ export async function updateAgent(
   agentId: string,
   agent: AgentInput,
 ): Promise<{ message: string; agent: Agent }> {
-  const response = await fetch(
-    `${API_BASE_URL}/agents/${agentId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(agent),
+  const response = await fetch(`${API_BASE_URL}/agents/${agentId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify(agent),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -193,12 +186,9 @@ export async function updateAgent(
 export async function deleteAgent(
   agentId: string,
 ): Promise<{ message: string; id: string }> {
-  const response = await fetch(
-    `${API_BASE_URL}/agents/${agentId}`,
-    {
-      method: "DELETE",
-    },
-  );
+  const response = await fetch(`${API_BASE_URL}/agents/${agentId}`, {
+    method: "DELETE",
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -208,7 +198,6 @@ export async function deleteAgent(
 
   return response.json();
 }
-
 
 export interface AgentRunResponse {
   agent_id: string;
