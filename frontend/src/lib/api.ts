@@ -208,3 +208,41 @@ export async function deleteAgent(
 
   return response.json();
 }
+
+
+export interface AgentRunResponse {
+  agent_id: string;
+  agent_name: string;
+  model_name: string;
+  output: string;
+}
+
+export async function runAgent(
+  agentId: string,
+  userInput: string,
+): Promise<AgentRunResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/agents/${encodeURIComponent(agentId)}/run`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_input: userInput,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    const message =
+      typeof errorData?.detail === "string"
+        ? errorData.detail
+        : "Failed to execute agent";
+
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<AgentRunResponse>;
+}

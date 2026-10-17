@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from backend.database.database import get_db
 from backend.database.models.agent import AgentDB
 from backend.models.agent import AgentConfig
+from backend.schemas.agent import AgentRunRequest
+from backend.services.ollama_service import generate_response
 
 from fastapi import HTTPException
 
@@ -169,4 +171,63 @@ def delete_agent(
     return {
         "message": "Agent deleted successfully",
         "id": agent_id,
+    }
+
+
+
+@router.post("/{agent_id}/run")
+def run_agent(
+    agent_id: str,
+    request: AgentRunRequest,
+    db: Session = Depends(get_db),
+):
+    # 1. Find the saved agent.
+    agent = (
+        db.query(AgentDB)
+        .filter(AgentDB.id == agent_id)
+        .first()
+    )
+
+    if agent is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Agent not found",
+        )
+
+    # 2. Support only providers that are implemented.
+    if agent.provider != "ollama":
+        raise HTTPException(
+            status_code=501,
+            detail=(
+                f"Provider '{agent.provider}' is not implemented yet. "
+                "Currently, only Ollama is supported."
+            ),
+        )
+
+    if not agent.model_name.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="The agent does not have a model configured.",
+        )
+
+    # 3. Send the saved configuration and user input to Ollama.
+    try:
+        output = generate_response(
+            model_name=agent.model_name,
+            system_prompt=agent.system_prompt,
+            user_input=request.user_input,
+            temperature=agent.temperature,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=str(exc),
+        ) from exc
+
+    # 4. Return the generated response.
+    return {
+        "agent_id": agent.id,
+        "agent_name": agent.name,
+        "model_name": agent.model_name,
+        "output": output,
     }

@@ -2,16 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { createAgent, getAgents, updateAgent, deleteAgent } from "@/lib/api";
+import {
+  createAgent,
+  getAgents,
+  updateAgent,
+  deleteAgent,
+  runAgent,
+} from "@/lib/api";
 import type { Agent, AgentInput } from "@/types/agent";
-
-
 
 const emptyAgent: AgentInput = {
   name: "",
   description: "",
   provider: "ollama",
-  model_name: "llama3.2",
+  model_name: "gemma3:4b",
   system_prompt: "",
   temperature: 0.2,
   tool_bindings: [],
@@ -26,22 +30,22 @@ export default function AgentsPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<AgentInput>(emptyAgent);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+  const [runInputs, setRunInputs] = useState<Record<string, string>>({});
+  const [runOutputs, setRunOutputs] = useState<Record<string, string>>({});
+  const [runErrors, setRunErrors] = useState<Record<string, string>>({});
+  const [runningAgentId, setRunningAgentId] = useState<string | null>(null);
 
- 
-const loadAgents = useCallback(async () => {
-  try {
-    const result = await getAgents();
-    setAgents(result.agents);
-    setError("");
-  } catch (err) {
-    setError(
-      err instanceof Error ? err.message : "Failed to load agents",
-    );
-  } finally {
-    setLoading(false);
-  }
-}, []);
-
+  const loadAgents = useCallback(async () => {
+    try {
+      const result = await getAgents();
+      setAgents(result.agents);
+      setError("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load agents");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     void loadAgents();
@@ -105,28 +109,63 @@ const loadAgents = useCallback(async () => {
   //   }
   // }
 
-
-async function handleDelete(agent: Agent) {
-  const confirmed = window.confirm(
-    `Delete "${agent.name}"? This action cannot be undone.`,
-  );
-
-  if (!confirmed) return;
-
-  setError("");
-
-  try {
-    await deleteAgent(agent.id);
-    await loadAgents();
-  } catch (err) {
-    setError(
-      err instanceof Error ? err.message : "Failed to delete agent",
+  async function handleDelete(agent: Agent) {
+    const confirmed = window.confirm(
+      `Delete "${agent.name}"? This action cannot be undone.`,
     );
+
+    if (!confirmed) return;
+
+    setError("");
+
+    try {
+      await deleteAgent(agent.id);
+      await loadAgents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete agent");
+    }
   }
-}
 
+  async function handleRun(agent: Agent) {
+    const userInput = runInputs[agent.id]?.trim() ?? "";
 
+    if (!userInput) {
+      setRunErrors((previous) => ({
+        ...previous,
+        [agent.id]: "Please enter a prompt before running the agent.",
+      }));
+      return;
+    }
 
+    setRunningAgentId(agent.id);
+
+    setRunErrors((previous) => ({
+      ...previous,
+      [agent.id]: "",
+    }));
+
+    setRunOutputs((previous) => ({
+      ...previous,
+      [agent.id]: "",
+    }));
+
+    try {
+      const result = await runAgent(agent.id, userInput);
+
+      setRunOutputs((previous) => ({
+        ...previous,
+        [agent.id]: result.output,
+      }));
+    } catch (err) {
+      setRunErrors((previous) => ({
+        ...previous,
+        [agent.id]:
+          err instanceof Error ? err.message : "Agent execution failed.",
+      }));
+    } finally {
+      setRunningAgentId(null);
+    }
+  }
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100 md:px-10">
       <div className="mx-auto max-w-6xl">
@@ -354,6 +393,66 @@ async function handleDelete(agent: Agent) {
                   <p className="line-clamp-3 whitespace-pre-wrap text-xs text-slate-400">
                     {agent.system_prompt}
                   </p>
+
+                  <div className="mt-5 space-y-3">
+                    <label className="grid gap-2 text-sm">
+                      Test your agent
+                      <textarea
+                        rows={3}
+                        value={runInputs[agent.id] ?? ""}
+                        onChange={(event) =>
+                          setRunInputs((previous) => ({
+                            ...previous,
+                            [agent.id]: event.target.value,
+                          }))
+                        }
+                        placeholder="Enter a task or question..."
+                        maxLength={10000}
+                        className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-slate-100"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => void handleRun(agent)}
+                      disabled={
+                        runningAgentId !== null ||
+                        agent.provider !== "ollama" ||
+                        !agent.model_name.trim()
+                      }
+                      className="w-full rounded-lg bg-cyan-500 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {runningAgentId === agent.id
+                        ? "Running agent..."
+                        : "▶ Run Agent"}
+                    </button>
+
+                    {agent.provider !== "ollama" && (
+                      <p className="text-sm text-amber-300">
+                        This provider is not supported for execution yet.
+                      </p>
+                    )}
+
+                    {runErrors[agent.id] && (
+                      <div
+                        role="alert"
+                        className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-300"
+                      >
+                        {runErrors[agent.id]}
+                      </div>
+                    )}
+
+                    {runOutputs[agent.id] && (
+                      <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
+                        <p className="mb-2 text-sm font-semibold text-emerald-300">
+                          Agent Response
+                        </p>
+                        <p className="whitespace-pre-wrap break-words text-sm text-slate-200">
+                          {runOutputs[agent.id]}
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="mt-5 border-t border-slate-800 pt-3">
                     <div className="mb-4 text-xs text-slate-500">
