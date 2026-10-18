@@ -1,4 +1,4 @@
-
+from collections import deque
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -66,6 +66,34 @@ def execute_workflow(
         raise WorkflowExecutionError(
             "A workflow must contain exactly one trigger node."
         )
+
+    
+    # Verify that every node is reachable from the trigger.
+    trigger_id = trigger_nodes[0]["id"]
+
+    adjacency: dict[str, list[str]] = {
+        node["id"]: [] for node in ordered_nodes
+    }
+
+    for edge in edges:
+        adjacency[edge["source"]].append(edge["target"])
+
+    reachable = {trigger_id}
+    queue = deque([trigger_id])
+
+    while queue:
+        current = queue.popleft()
+
+        for neighbor in adjacency[current]:
+            if neighbor not in reachable:
+                reachable.add(neighbor)
+                queue.append(neighbor)
+
+    if len(reachable) != len(ordered_nodes):
+        raise WorkflowExecutionError(
+            "Workflow contains disconnected nodes."
+        )
+
 
     # Keep the existing context and execution loop below this.
     context: dict[str, Any] = {

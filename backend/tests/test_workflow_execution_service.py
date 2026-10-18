@@ -46,6 +46,43 @@ class TestPrepareWorkflowExecution(unittest.TestCase):
 
 
     
+    def test_disconnected_node_is_rejected(self):
+        nodes = [
+            {
+                "id": "trigger",
+                "type": "trigger",
+                "config": {},
+            },
+            {
+                "id": "agent-1",
+                "type": "agent",
+                "config": {"agentId": "agent-123"},
+            },
+            {
+                "id": "agent-2",
+                "type": "agent",
+                "config": {"agentId": "agent-456"},
+            },
+        ]
+
+        edges = [
+            {"source": "trigger", "target": "agent-1"},
+        ]
+
+        with self.assertRaisesRegex(
+            WorkflowExecutionError,
+            "disconnected",
+        ):
+            execute_workflow(
+                nodes=nodes,
+                edges=edges,
+                db=MagicMock(),
+                initial_input="Hello",
+            )
+
+
+
+    
     def test_workflow_with_multiple_triggers_is_rejected(self):
         nodes = [
             {
