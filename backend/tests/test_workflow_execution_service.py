@@ -168,6 +168,38 @@ class TestPrepareWorkflowExecution(unittest.TestCase):
                 db=MagicMock(),
                 initial_input="Hello",
             )
+    
+    def test_empty_workflow_is_rejected(self):
+        with self.assertRaisesRegex(
+            WorkflowExecutionError,
+            "empty workflow",
+        ):
+            execute_workflow(
+                nodes=[],
+                edges=[],
+                db=MagicMock(),
+                initial_input="Hello",
+            )
+    
+    def test_workflow_without_trigger_is_rejected(self):
+        nodes = [
+            {
+                "id": "agent",
+                "type": "agent",
+                "config": {"agentId": "agent-123"},
+            },
+        ]
+
+        with self.assertRaisesRegex(
+            WorkflowExecutionError,
+            "exactly one trigger",
+        ):
+            execute_workflow(
+                nodes=nodes,
+                edges=[],
+                db=MagicMock(),
+                initial_input="Hello",
+            )
 
 
 
