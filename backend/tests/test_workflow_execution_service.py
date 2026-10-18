@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
-
+from backend.services.agent_execution_service import AgentExecutionError
 from backend.services.workflow_engine import WorkflowValidationError
 from backend.services.workflow_execution_service import (
     WorkflowExecutionError,
@@ -79,6 +79,43 @@ class TestPrepareWorkflowExecution(unittest.TestCase):
                 db=MagicMock(),
                 initial_input="Hello",
             )
+
+    
+    @patch("backend.services.workflow_execution_service.execute_agent")
+    def test_agent_failure_stops_workflow(self, mock_execute_agent):
+        nodes = [
+            {
+                "id": "trigger",
+                "type": "trigger",
+                "config": {},
+            },
+            {
+                "id": "agent",
+                "type": "agent",
+                "config": {"agentId": "agent-123"},
+            },
+        ]
+        edges = [
+            {"source": "trigger", "target": "agent"},
+        ]
+
+        mock_execute_agent.side_effect = AgentExecutionError(
+            "Ollama is unavailable"
+        )
+
+        with self.assertRaisesRegex(
+            WorkflowExecutionError,
+            "Ollama is unavailable",
+        ):
+            execute_workflow(
+                nodes=nodes,
+                edges=edges,
+                db=MagicMock(),
+                initial_input="Hello",
+            )
+
+        mock_execute_agent.assert_called_once()
+ 
 
 
 
