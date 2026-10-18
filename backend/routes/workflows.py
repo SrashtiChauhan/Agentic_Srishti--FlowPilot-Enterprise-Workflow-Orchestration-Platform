@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.database.database import get_db
 from backend.database.models.workflow import WorkflowDB
-from backend.schemas.workflow import WorkflowCreate
-
-import uuid
+from backend.schemas.workflow import WorkflowCreate, WorkflowRunRequest
+from backend.services.workflow_execution_service import (
+    WorkflowExecutionError,
+    execute_workflow,
+)
 
 
 router=APIRouter(
@@ -118,3 +122,34 @@ async def delete_workflow(
         "message": "Workflow deleted successfully",
         "id": workflow_id,
     }
+
+
+@router.post("/{workflow_id}/run")
+def run_workflow(
+    workflow_id: str,
+    request: WorkflowRunRequest,
+    db: Session = Depends(get_db),
+):
+    result = db.execute(
+        select(WorkflowDB).where(WorkflowDB.id == workflow_id)
+    )
+    workflow = result.scalar_one_or_none()
+
+    if workflow is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Workflow not found.",
+        )
+
+    try:
+        return execute_workflow(
+            nodes=workflow.nodes,
+            edges=workflow.edges,
+            db=db,
+            initial_input=request.initial_input,
+        )
+    except WorkflowExecutionError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
