@@ -44,6 +44,34 @@ class TestPrepareWorkflowExecution(unittest.TestCase):
         self.assertEqual(result[1]["title"], "AI Agent")
         self.assertEqual(result[2]["type"], "action")
 
+
+    
+    def test_workflow_with_multiple_triggers_is_rejected(self):
+        nodes = [
+            {
+                "id": "trigger-1",
+                "type": "trigger",
+                "config": {},
+            },
+            {
+                "id": "trigger-2",
+                "type": "trigger",
+                "config": {},
+            },
+        ]
+
+        with self.assertRaisesRegex(
+            WorkflowExecutionError,
+            "exactly one trigger",
+        ):
+            execute_workflow(
+                nodes=nodes,
+                edges=[],
+                db=MagicMock(),
+                initial_input="Hello",
+            )
+
+
     def test_invalid_workflow_is_rejected(self):
         nodes = [
             {"id": "trigger", "type": "trigger"},
