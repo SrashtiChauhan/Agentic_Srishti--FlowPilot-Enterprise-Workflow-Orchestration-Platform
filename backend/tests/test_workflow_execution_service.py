@@ -208,6 +208,16 @@ class TestPrepareWorkflowExecution(unittest.TestCase):
             "Hello from the agent!",
         )
 
+        self.assertEqual(
+            result["outputs"]["trigger"]["status"],
+            "completed",
+        )
+        self.assertEqual(
+            result["outputs"]["agent"]["status"],
+            "completed",
+        )
+        
+
         mock_execute_agent.assert_called_once_with(
             agent_id="agent-123",
             user_input="Say hello",
