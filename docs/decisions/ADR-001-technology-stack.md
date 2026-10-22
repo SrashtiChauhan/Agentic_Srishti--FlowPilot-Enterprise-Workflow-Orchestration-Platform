@@ -24,7 +24,7 @@ The goal is to select technologies that:
 
 ### 1. Frontend — Next.js with React and TypeScript
 
-**Selected technology:** Next.js + React + TypeScript
+**Selected technology:** Next.js + React + TypeScrip
 
 **Why:**
 
