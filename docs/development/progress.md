@@ -8,7 +8,7 @@ FlowPilot is an enterprise workflow orchestration platform combining visual work
 
 ---
 
-# Development Status
+# Development Statu
 
 ## Current Phase
 
