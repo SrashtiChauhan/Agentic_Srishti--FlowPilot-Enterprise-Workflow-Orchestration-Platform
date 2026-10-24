@@ -3,7 +3,7 @@
 * **Status:** Accepted
 * **Date:** 2026-09-12
 * **Decision Type:** Architecture
-* **Project:** FlowPilot — Enterprise Workflow Orchestration Platform
+* **Project:** FlowPilot — Enterprise Workflow Orchestration Platfor
 
 ## Context
 
