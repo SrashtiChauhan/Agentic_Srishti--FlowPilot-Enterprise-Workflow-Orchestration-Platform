@@ -12,6 +12,8 @@ from backend.services.ollama_service import generate_response
 
 from fastapi import HTTPException
 
+from backend.services.tool_registry import validate_tool_ids
+
 from backend.services.agent_execution_service import (
     AgentExecutionError,
     execute_agent,
@@ -23,11 +25,28 @@ router = APIRouter(
 )
 
 
+def validate_agent_tools(tool_bindings: list[str]) -> None:
+    """Reject tool IDs that are not present in the central registry."""
+    unknown_ids = validate_tool_ids(tool_bindings)
+
+    if unknown_ids:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "One or more tool IDs are not registered.",
+                "unknown_tool_ids": unknown_ids,
+            },
+        )
+
+
+
 @router.post("/")
 def create_agent(
     agent: AgentConfig,
     db: Session = Depends(get_db),
 ):
+    validate_agent_tools(agent.tool_bindings)
+
     new_agent = AgentDB(
         id=str(uuid.uuid4()),
         name=agent.name,
@@ -122,6 +141,8 @@ def update_agent(
             status_code=404,
             detail="Agent not found",
         )
+
+    validate_agent_tools(agent_data.tool_bindings)
 
     agent.name = agent_data.name
     agent.description = agent_data.description
