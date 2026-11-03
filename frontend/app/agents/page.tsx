@@ -354,6 +354,111 @@ export default function AgentsPage() {
               </select>
             </label>
 
+
+            {/* Tool Selection */}
+            <div className="grid gap-3 md:col-span-2">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-100">
+                  Tool Access
+                </h3>
+                <p className="mt-1 text-xs text-slate-400">
+                  Select the tools this agent is allowed to access.
+                </p>
+              </div>
+
+              {toolsLoading ? (
+                <p className="text-sm text-slate-400">
+                  Loading available tools...
+                </p>
+              ) : toolsError ? (
+                <p role="alert" className="text-sm text-rose-400">
+                  {toolsError}
+                </p>
+              ) : tools.length === 0 ? (
+                <p className="text-sm text-slate-400">
+                  No tools are currently registered.
+                </p>
+              ) : (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {tools.map((tool) => {
+                    const selected = form.tool_bindings.includes(tool.id);
+
+                    return (
+                      <div
+                        key={tool.id}
+                        className={`rounded-lg border p-4 ${
+                          selected
+                            ? "border-cyan-500/60 bg-cyan-500/5"
+                            : "border-slate-700 bg-slate-950/60"
+                        }`}
+                      >
+                        <label className="flex cursor-pointer items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(event) => {
+                              setForm((previous) => ({
+                                ...previous,
+                                tool_bindings: event.target.checked
+                                  ? [...previous.tool_bindings, tool.id]
+                                  : previous.tool_bindings.filter(
+                                      (id) => id !== tool.id,
+                                    ),
+                              }));
+                            }}
+                            className="mt-1 accent-cyan-400"
+                          />
+
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-semibold">
+                              {tool.name}
+                            </span>
+                            <span className="mt-1 block text-xs text-slate-400">
+                              {tool.description}
+                            </span>
+                            <span className="mt-2 block text-xs capitalize text-cyan-400">
+                              {tool.category} · {tool.mode}
+                            </span>
+                          </span>
+                        </label>
+
+                        <details className="mt-3 border-t border-slate-800 pt-3">
+                          <summary className="cursor-pointer text-xs text-slate-400 hover:text-cyan-400">
+                            Inspect input/output schemas
+                          </summary>
+
+                          <div className="mt-3 space-y-3">
+                            <div>
+                              <p className="mb-1 text-xs font-semibold text-slate-300">
+                                Input Schema
+                              </p>
+                              <pre className="overflow-x-auto rounded-md bg-slate-900 p-3 text-xs text-emerald-300">
+                                {JSON.stringify(tool.input_schema, null, 2)}
+                              </pre>
+                            </div>
+
+                            <div>
+                              <p className="mb-1 text-xs font-semibold text-slate-300">
+                                Output Schema
+                              </p>
+                              <pre className="overflow-x-auto rounded-md bg-slate-900 p-3 text-xs text-cyan-300">
+                                {JSON.stringify(tool.output_schema, null, 2)}
+                              </pre>
+                            </div>
+                          </div>
+                        </details>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <p className="text-xs text-slate-400">
+                Selected tools: {form.tool_bindings.length}
+              </p>
+            </div>
+
+
             <div className="md:col-span-2">
               <button
                 type="submit"
