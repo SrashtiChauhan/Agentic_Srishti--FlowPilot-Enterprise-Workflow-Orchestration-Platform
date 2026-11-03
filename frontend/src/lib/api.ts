@@ -1,6 +1,7 @@
 import type { Agent, AgentInput } from "@/types/agent";
-import type { Node, Edge } from "@xyflow/react";
 import type { ToolsResponse } from "@/types/tool";
+import type { Node, Edge } from "@xyflow/react";
+
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
