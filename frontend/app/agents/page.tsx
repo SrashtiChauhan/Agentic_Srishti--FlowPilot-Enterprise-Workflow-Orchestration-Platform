@@ -5,11 +5,13 @@ import Link from "next/link";
 import {
   createAgent,
   getAgents,
+  getTools,
   updateAgent,
   deleteAgent,
   runAgent,
 } from "@/lib/api";
 import type { Agent, AgentInput } from "@/types/agent";
+import type { Tool } from "@/types/tool";
 
 const emptyAgent: AgentInput = {
   name: "",
@@ -24,6 +26,9 @@ const emptyAgent: AgentInput = {
 
 export default function AgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [tools, setTools] = useState<Tool[]>([]);
+  const [toolsLoading, setToolsLoading] = useState(true);
+  const [toolsError, setToolsError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -47,9 +52,24 @@ export default function AgentsPage() {
     }
   }, []);
 
+  const loadTools = useCallback(async () => {
+    try {
+      const result = await getTools();
+      setTools(result.tools);
+      setToolsError("");
+    } catch (err) {
+      setToolsError(
+        err instanceof Error ? err.message : "Failed to load tools",
+      );
+    } finally {
+      setToolsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void loadAgents();
-  }, [loadAgents]);
+    void loadTools();
+  }, [loadAgents, loadTools]);
 
   async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
