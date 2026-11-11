@@ -7,6 +7,7 @@ from backend.services.agent_execution_service import (
     execute_agent,
     execute_agent_with_tools,
 )
+from backend.services.tool_execution_service import ToolExecutionError
 
 
 class TestAgentExecutionService(unittest.TestCase):
@@ -155,6 +156,103 @@ class TestAgentExecutionService(unittest.TestCase):
 
         self.assertEqual(second_call_messages[-1]["role"], "tool")
         self.assertEqual(second_call_messages[-1]["tool_name"], "ip_reputation")
+
+
+    
+    @patch("backend.services.agent_execution_service.chat_with_ollama")
+    def test_unimplemented_selected_tool_is_rejected(self, mock_chat):
+        agent = MagicMock()
+        agent.tool_bindings = ["aws_api"]
+        agent.model_name = "qwen3:4b"
+
+        with self.assertRaisesRegex(
+            AgentExecutionError,
+            "not executable yet",
+        ):
+            execute_agent_with_tools(agent, "Inspect an AWS resource")
+
+        mock_chat.assert_not_called()
+
+    @patch("backend.services.agent_execution_service.execute_tool")
+    @patch("backend.services.agent_execution_service.chat_with_ollama")
+    def test_unauthorized_model_tool_request_is_rejected(
+        self,
+        mock_chat,
+        mock_execute_tool,
+    ):
+        agent = MagicMock()
+        agent.tool_bindings = ["ip_reputation"]
+        agent.model_name = "qwen3:4b"
+        agent.system_prompt = "You are a security assistant."
+        agent.temperature = 0.2
+
+        mock_chat.return_value = {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "call-456",
+                    "function": {
+                        "name": "aws_api",
+                        "arguments": {
+                            "operation": "inspect_resource",
+                            "resource_id": "test-resource",
+                        },
+                    },
+                }
+            ],
+        }
+
+        mock_execute_tool.side_effect = ToolExecutionError(
+            "Agent is not authorized to use tool 'aws_api'."
+        )
+
+        with self.assertRaisesRegex(
+            AgentExecutionError,
+            "not authorized",
+        ):
+            execute_agent_with_tools(agent, "Inspect this resource")
+
+        mock_execute_tool.assert_called_once()
+
+    @patch("backend.services.agent_execution_service.chat_with_ollama")
+    def test_tool_call_round_limit_is_enforced(self, mock_chat):
+        agent = MagicMock()
+        agent.tool_bindings = ["ip_reputation"]
+        agent.model_name = "qwen3:4b"
+        agent.system_prompt = "You are a security assistant."
+        agent.temperature = 0.2
+
+        mock_chat.return_value = {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "call-repeat",
+                    "function": {
+                        "name": "ip_reputation",
+                        "arguments": {"ip_address": "8.8.8.8"},
+                    },
+                }
+            ],
+        }
+
+        with patch(
+            "backend.services.agent_execution_service.execute_tool",
+            return_value={
+                "ip_address": "8.8.8.8",
+                "risk_level": "low",
+                "score": 10,
+            },
+        ):
+            with self.assertRaisesRegex(
+                AgentExecutionError,
+                "maximum number of tool-call rounds",
+            ):
+                execute_agent_with_tools(agent, "Investigate this IP")
+
+        self.assertEqual(mock_chat.call_count, 4)
+
 
 
 
