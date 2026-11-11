@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 from backend.services.agent_execution_service import (
     AgentExecutionError,
     execute_agent,
+    execute_agent_with_tools,
 )
 
 
@@ -49,6 +50,7 @@ class TestAgentExecutionService(unittest.TestCase):
         agent.id = "agent-123"
         agent.name = "Test Agent"
         agent.provider = "ollama"
+        agent.tool_bindings = []
         agent.model_name = "gemma3:4b"
         agent.system_prompt = "You are a helpful assistant."
         agent.temperature = 0.2
@@ -74,6 +76,7 @@ class TestAgentExecutionService(unittest.TestCase):
     def test_model_failure_is_wrapped(self, mock_generate):
         agent = MagicMock()
         agent.provider = "ollama"
+        agent.tool_bindings = []
         agent.model_name = "gemma3:4b"
         agent.system_prompt = "You are helpful."
         agent.temperature = 0.2
@@ -86,6 +89,73 @@ class TestAgentExecutionService(unittest.TestCase):
             "Ollama is unavailable",
         ):
             execute_agent("agent-123", "Hello", self.db)
+
+
+    
+    @patch("backend.services.agent_execution_service.execute_tool")
+    @patch("backend.services.agent_execution_service.chat_with_ollama")
+    def test_agent_executes_authorized_tool_and_returns_final_response(
+        self,
+        mock_chat,
+        mock_execute_tool,
+    ):
+        agent = MagicMock()
+        agent.id = "agent-123"
+        agent.name = "Security Agent"
+        agent.provider = "ollama"
+        agent.model_name = "qwen3:4b"
+        agent.system_prompt = "You are a security assistant."
+        agent.temperature = 0.2
+        agent.tool_bindings = ["ip_reputation"]
+
+        self.db.query.return_value.filter.return_value.first.return_value = agent
+
+        mock_chat.side_effect = [
+            {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [
+                    {
+                        "id": "call-123",
+                        "function": {
+                            "name": "ip_reputation",
+                            "arguments": {"ip_address": "8.8.8.8"},
+                        },
+                    }
+                ],
+            },
+            {
+                "role": "assistant",
+                "content": "The IP has a low simulated risk score of 10.",
+            },
+        ]
+
+        mock_execute_tool.return_value = {
+            "ip_address": "8.8.8.8",
+            "risk_level": "low",
+            "score": 10,
+        }
+
+        result = execute_agent("agent-123", "Investigate 8.8.8.8", self.db)
+
+        self.assertEqual(
+            result["output"],
+            "The IP has a low simulated risk score of 10.",
+        )
+
+        mock_execute_tool.assert_called_once_with(
+            tool_id="ip_reputation",
+            arguments={"ip_address": "8.8.8.8"},
+            allowed_tool_ids=["ip_reputation"],
+        )
+
+        self.assertEqual(mock_chat.call_count, 2)
+
+        second_call_messages = mock_chat.call_args_list[1].kwargs["messages"]
+
+        self.assertEqual(second_call_messages[-1]["role"], "tool")
+        self.assertEqual(second_call_messages[-1]["tool_name"], "ip_reputation")
+
 
 
 if __name__ == "__main__":
