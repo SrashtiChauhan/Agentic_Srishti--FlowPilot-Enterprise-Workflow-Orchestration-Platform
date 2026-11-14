@@ -42,3 +42,10 @@ class AgentConfig(BaseModel):
         "high",
         "critical",
     ] = "low"
+
+    output_format: Literal[
+        "text",
+        "json",
+    ] = "text"
+
+    
