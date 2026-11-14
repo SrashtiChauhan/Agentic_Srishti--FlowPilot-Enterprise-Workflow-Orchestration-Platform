@@ -57,6 +57,7 @@ def create_agent(
         temperature=agent.temperature,
         tool_bindings=agent.tool_bindings,
         risk_score=agent.risk_score,
+        output_format=agent.output_format,
     )
 
     db.add(new_agent)
@@ -75,6 +76,7 @@ def create_agent(
             "temperature": new_agent.temperature,
             "tool_bindings": new_agent.tool_bindings,
             "risk_score": new_agent.risk_score,
+            "output_format": new_agent.output_format,
         },
     }
 
@@ -95,6 +97,7 @@ def get_agents(db: Session = Depends(get_db)):
                 "temperature": agent.temperature,
                 "tool_bindings": agent.tool_bindings,
                 "risk_score": agent.risk_score,
+                "output_format": agent.output_format,
             }
             for agent in agents
         ]
@@ -121,6 +124,7 @@ def get_agent(agent_id: str, db: Session = Depends(get_db)):
         "temperature": agent.temperature,
         "tool_bindings": agent.tool_bindings,
         "risk_score": agent.risk_score,
+        "output_format": agent.output_format,
     }
 
 
@@ -152,6 +156,7 @@ def update_agent(
     agent.temperature = agent_data.temperature
     agent.tool_bindings = agent_data.tool_bindings
     agent.risk_score = agent_data.risk_score
+    agent.output_format = agent_data.output_format
 
     db.commit()
     db.refresh(agent)
@@ -168,6 +173,7 @@ def update_agent(
             "temperature": agent.temperature,
             "tool_bindings": agent.tool_bindings,
             "risk_score": agent.risk_score,
+            "output_format": agent.output_format,
         },
     }
 
