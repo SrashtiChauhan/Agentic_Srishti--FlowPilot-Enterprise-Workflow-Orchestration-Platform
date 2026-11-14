@@ -58,3 +58,8 @@ class AgentDB(Base):
         nullable=False,
         default="low",
     )
+    output_format: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+        default="text",
+    )
