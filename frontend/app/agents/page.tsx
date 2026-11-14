@@ -95,24 +95,24 @@ export default function AgentsPage() {
     }
   }
 
-function handleEdit(agent: Agent) {
-  setForm({
-    name: agent.name,
-    description: agent.description,
-    provider: agent.provider,
-    model_name: agent.model_name,
-    system_prompt: agent.system_prompt,
-    temperature: agent.temperature,
-    tool_bindings: agent.tool_bindings,
-    risk_score: agent.risk_score,
-    output_format: agent.output_format,
-  });
+  function handleEdit(agent: Agent) {
+    setForm({
+      name: agent.name,
+      description: agent.description,
+      provider: agent.provider,
+      model_name: agent.model_name,
+      system_prompt: agent.system_prompt,
+      temperature: agent.temperature,
+      tool_bindings: agent.tool_bindings,
+      risk_score: agent.risk_score,
+      output_format: agent.output_format,
+    });
 
-  setEditingAgentId(agent.id);
-  setShowForm(true);
-  setError("");
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
+    setEditingAgentId(agent.id);
+    setShowForm(true);
+    setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   // async function handleDelete(agent: Agent) {
   //   const confirmed = window.confirm(
@@ -356,6 +356,27 @@ function handleEdit(agent: Agent) {
               </select>
             </label>
 
+            <label className="grid gap-2 text-sm">
+              Output format
+              <select
+                value={form.output_format}
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    output_format: event.target
+                      .value as AgentInput["output_format"],
+                  })
+                }
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5"
+              >
+                <option value="text">Text — Conversational response</option>
+                <option value="json">JSON — Structured response</option>
+              </select>
+              <span className="text-xs text-slate-400">
+                Choose text for normal responses or JSON for structured workflow
+                data.
+              </span>
+            </label>
 
             {/* Tool Selection */}
             <div className="grid gap-3 md:col-span-2">
@@ -459,7 +480,6 @@ function handleEdit(agent: Agent) {
                 Selected tools: {form.tool_bindings.length}
               </p>
             </div>
-
 
             <div className="md:col-span-2">
               <button
