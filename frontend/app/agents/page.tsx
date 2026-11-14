@@ -22,6 +22,7 @@ const emptyAgent: AgentInput = {
   temperature: 0.2,
   tool_bindings: [],
   risk_score: "low",
+  output_format: "text",
 };
 
 export default function AgentsPage() {
@@ -94,23 +95,24 @@ export default function AgentsPage() {
     }
   }
 
-  function handleEdit(agent: Agent) {
-    setForm({
-      name: agent.name,
-      description: agent.description,
-      provider: agent.provider,
-      model_name: agent.model_name,
-      system_prompt: agent.system_prompt,
-      temperature: agent.temperature,
-      tool_bindings: agent.tool_bindings,
-      risk_score: agent.risk_score,
-    });
+function handleEdit(agent: Agent) {
+  setForm({
+    name: agent.name,
+    description: agent.description,
+    provider: agent.provider,
+    model_name: agent.model_name,
+    system_prompt: agent.system_prompt,
+    temperature: agent.temperature,
+    tool_bindings: agent.tool_bindings,
+    risk_score: agent.risk_score,
+    output_format: agent.output_format,
+  });
 
-    setEditingAgentId(agent.id);
-    setShowForm(true);
-    setError("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  setEditingAgentId(agent.id);
+  setShowForm(true);
+  setError("");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
   // async function handleDelete(agent: Agent) {
   //   const confirmed = window.confirm(
